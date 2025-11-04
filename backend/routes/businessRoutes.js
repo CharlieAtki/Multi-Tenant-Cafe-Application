@@ -1,9 +1,13 @@
 import express from 'express';
-import { createBusiness } from '../controller/businessController.js';
+import { createBusiness, getBusinessAnalytics, getTimeRangeAnalytics } from '../controller/businessController.js';
 
 const router = express.Router();
 
 router.post('/createBusiness', createBusiness);
+
+// New analytics routes
+router.post('/analytics', getBusinessAnalytics);
+router.post('/analytics/timerange', getTimeRangeAnalytics);
 
 export default router;
 

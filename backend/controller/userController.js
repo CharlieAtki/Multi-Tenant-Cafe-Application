@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import {generateTokens} from "./authCheck.js";
 import User from "../models/User.js";
 import Product from "../models/Product.js";
+import Order from "../models/Order.js";
 import bcrypt from 'bcryptjs';
 
 // Number of times the hashing algorithm is applied

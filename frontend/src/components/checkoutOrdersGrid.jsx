@@ -48,6 +48,7 @@ const CheckoutOrdersGrid = () => {
         fetchTheCheckoutTotalCost();
     }, [userData.user.checkoutBasket]);  // Optional: rerun when basket changes
 
+    
 
     const goBack = () => {
         navigate(-1);
@@ -240,7 +241,8 @@ const CheckoutOrdersGrid = () => {
                         </div>
 
                         {/* Checkout button */}
-                        <button className="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-md transition">
+                        <button className="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-md transition"
+                            onClick={handleOrderCompletion}>
                             Proceed to Checkout
                         </button>
 
