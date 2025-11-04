@@ -4,9 +4,9 @@ import { completeUserOrder, getUserOrders } from '../controller/orderController.
 const router = express.Router();
 
 // Complete checkout and create order(s)
-router.post('/completeOrder', completeUserOrder);
+router.post('/completeUserOrder', completeUserOrder);
 
 // Get user's order history
 router.get('/getUserOrders', getUserOrders);
 
-export default router
+export default router;

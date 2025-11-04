@@ -3,13 +3,18 @@ import BusinessSalesLineChart from "./graphs/businessSalesLineChart";
 import BusinessAreaChart from "./graphs/businessAreaChart";
 import BusinessBarChart from "./graphs/businessBarChart";
 import makeAuthenticatedRequest from "../../utils/api";
+import { useOutletContext } from 'react-router-dom';
 
-const BusinessAnalyticsGrid = ({ businessId }) => {
+const BusinessAnalyticsGrid = ( ) => {
+  const { userData } = useOutletContext();
+
   const [analyticsData, setAnalyticsData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
+  const businessId = userData?.user?.businessId;
 
   useEffect(() => {
     const fetchAnalytics = async () => {
@@ -22,7 +27,7 @@ const BusinessAnalyticsGrid = ({ businessId }) => {
       try {
         setLoading(true);
         const response = await makeAuthenticatedRequest(
-          `${backendUrl}/api/business-auth/analytics`,
+          `${backendUrl}/api/business-unAuth/analytics`,
           {
             method: "POST",
             body: JSON.stringify({ businessId })

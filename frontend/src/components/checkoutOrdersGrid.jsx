@@ -48,8 +48,49 @@ const CheckoutOrdersGrid = () => {
         fetchTheCheckoutTotalCost();
     }, [userData.user.checkoutBasket]);  // Optional: rerun when basket changes
 
-    
+    const handleOrderCompletion = async () => {
+        setUpdatingCheckoutValue(true);
 
+        try {
+            const response = await makeAuthenticatedRequest(
+                `${backendUrl}/api/order-auth/completeUserOrder`,
+                {
+                    method: "POST",
+                    body: JSON.stringify({
+                        userEmail: userData.user.email,
+                        // paymentMethod: "Card", // You can make this dynamic if needed
+                        // deliveryAddress: null // Will use user's default address from DB
+                    })
+                }
+            );
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Clear local checkout basket
+                setUserData({
+                    ...userData,
+                    user: {
+                        ...userData.user,
+                        checkoutBasket: []
+                    }
+                });
+                
+                // Show success message
+                alert(`Order completed successfully! ${data.orderCount} order(s) created for £${data.totalValue.toFixed(2)}`);
+                
+                // Optionally navigate to orders page or home
+                navigate('/marketplace'); // or navigate('/orders')
+            } else {
+                alert("Failed to complete order: " + data.message);
+            }
+        } catch (error) {
+            console.error("Error completing order:", error);
+            alert("An error occurred while completing your order");
+        } finally {
+            setUpdatingCheckoutValue(false);
+        }
+    };
     const goBack = () => {
         navigate(-1);
     };

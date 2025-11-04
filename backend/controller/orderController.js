@@ -8,7 +8,7 @@ export const completeUserOrder = async (req, res) => {
     session.startTransaction();
 
     try {
-        const { userEmail, paymentMethod, deliveryAddress } = req.body;
+        const { userEmail } = req.body;
 
         // Find user and populate checkout basket
         const user = await User.findOne({ email: userEmail }).session(session);
@@ -89,8 +89,8 @@ export const completeUserOrder = async (req, res) => {
                 orderedProducts: businessOrder.products,
                 totalValue: businessOrder.totalValue,
                 status: 'Pending',
-                deliveryAddress: deliveryAddress || user.address,
-                paymentMethod: paymentMethod || 'Card',
+                // deliveryAddress: deliveryAddress || user.address,
+                // paymentMethod: paymentMethod || 'Card',
                 orderDate: new Date()
             });
 
