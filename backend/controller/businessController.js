@@ -326,3 +326,40 @@ export const getTimeRangeAnalytics = async (req, res) => {
     });
   }
 };
+
+export const fetchCurrentBusinessInfo = async (req, res) => {
+    try {
+        const { businessId } = req.body;
+
+        if (!businessId || !mongoose.Types.ObjectId.isValid(businessId)) {
+            return res.status(400).json({
+                success: false,
+                message: "Valid business ID required"
+            });
+        }
+
+        // Fetching business data with populated owner and employees
+        const business = await Business.findById(businessId)
+            .populate('owner', 'email')       // owner will have only email
+            .populate('employees', 'email');  // employees will have only email
+
+        if (!business) {
+            return res.status(404).json({
+                success: false,
+                message: "Business not found"
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            businessData: business
+        });
+
+    } catch (error) {
+        console.error("Error in fetchCurrentBusinessInfo:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        });
+    }
+};

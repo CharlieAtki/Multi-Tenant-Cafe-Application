@@ -1,5 +1,5 @@
 import { useState } from "react";
-import {FiPlus, FiUserPlus, FiChevronLeft, FiChevronRight, FiPlusCircle, FiMenu, FiList} from "react-icons/fi";
+import {FiPlus, FiPackage, FiChevronLeft, FiChevronRight, FiUsers, FiTrendingUp, FiList} from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -40,8 +40,8 @@ const BusinessDashboardSideBar = () => {
                         `}
                         onClick={() => handleNavigate('/businessDashboard/createProduct')}
                         >
-                            <FiMenu className="text-xl" />
-                            {!isCollapsed && <span className="ml-2">Create Product</span>}
+                            <FiPackage className="text-xl" />
+                            {!isCollapsed && <span className="ml-2">Product</span>}
                     </button>
                     <button 
                         className={`
@@ -52,7 +52,7 @@ const BusinessDashboardSideBar = () => {
                         `}
                         onClick={() => handleNavigate('/businessDashboard/analytics')}
                         >
-                            <FiPlus className="text-xl" />
+                            <FiTrendingUp className="text-xl" />
                             {!isCollapsed && <span className="ml-2">Analytics</span>}
                     </button>
                     <button 
@@ -66,7 +66,19 @@ const BusinessDashboardSideBar = () => {
                         >
                             <FiList className="text-xl" />
                             {!isCollapsed && <span className="ml-2">Orders</span>}
-                        </button>
+                    </button>
+                    <button 
+                        className={`
+                            flex items-center px-3 py-2 text-sm font-medium rounded-md
+                            ${isActive('/dashboard/employee') ? 'bg-gray-200 dark:bg-gray-700' : ''}
+                            text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all
+                            ${isCollapsed ? "justify-center" : "justify-start"}
+                        `}
+                        onClick={() => handleNavigate('/businessDashboard/employee')}
+                        >
+                            <FiUsers className="text-xl" />
+                            {!isCollapsed && <span className="ml-2">Employee</span>}
+                    </button>
                 </div>
 
                 {/* Collapse Button */}

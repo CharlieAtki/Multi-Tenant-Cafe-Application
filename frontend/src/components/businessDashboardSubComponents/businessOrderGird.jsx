@@ -85,9 +85,6 @@ const BusinessOrderGrid = () => {
 
   const { orders } = analyticsData || {};
 
-  console.log("Fetched orders:", orders);
-  console.log("Analytics data:", analyticsData);
-
   return (
     <div className="flex flex-col gap-6 p-6 bg-gray-100 dark:bg-gray-900 rounded-2xl">
       {/* Time Range Selector */}
