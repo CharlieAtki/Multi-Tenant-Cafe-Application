@@ -10,21 +10,21 @@ import {
 } from "recharts";
 import {useEffect, useState} from "react";
 
-const BusinessBarChart = ({ metricOne, metricTwo, metricOneUnit, metricTwoUnit}) => {
+const BusinessBarChart = ({ graphData, metricOne, metricTwo, metricOneUnit, metricTwoUnit}) => {
     // const [graphData, setGraphData] = useState([]) // state to store dynamic graph data
     // const [error, setError] = useState(false) // state to handle errors
 
     // const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
-    const graphData = [
-        { name: 'Week 1', [metricOne]: 4000, [metricTwo]: 2400 },
-        { name: 'Week 2', [metricOne]: 3000, [metricTwo]: 1398 },
-        { name: 'Week 3', [metricOne]: 2000, [metricTwo]: 9800 },
-        { name: 'Week 4', [metricOne]: 2780, [metricTwo]: 3908 },
-        { name: 'Week 5', [metricOne]: 1890, [metricTwo]: 4800 },
-        { name: 'Week 6', [metricOne]: 2390, [metricTwo]: 3800 },
-        { name: 'Week 7', [metricOne]: 3490, [metricTwo]: 4300 },
-    ];
+    // const graphData = [
+    //     { name: 'Week 1', [metricOne]: 4000, [metricTwo]: 2400 },
+    //     { name: 'Week 2', [metricOne]: 3000, [metricTwo]: 1398 },
+    //     { name: 'Week 3', [metricOne]: 2000, [metricTwo]: 9800 },
+    //     { name: 'Week 4', [metricOne]: 2780, [metricTwo]: 3908 },
+    //     { name: 'Week 5', [metricOne]: 1890, [metricTwo]: 4800 },
+    //     { name: 'Week 6', [metricOne]: 2390, [metricTwo]: 3800 },
+    //     { name: 'Week 7', [metricOne]: 3490, [metricTwo]: 4300 },
+    // ];
 
     // useEffect(() => {
     //     const fetchGraphData = async () => {
