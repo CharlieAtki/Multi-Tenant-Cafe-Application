@@ -10,6 +10,7 @@ import ProductViewPage from './pages/productViewPage';
 import AgentChatPage from './pages/agentChatPage';
 import LandingPage from './pages/landingPage';
 import BusinessAnalyticsGrid from './components/businessDashboardSubComponents/businessAnalyticsGrid';
+import BusinessOrderGrid from './components/businessDashboardSubComponents/businessOrderGird';
 
 const App = ( ) => {
 	return (
@@ -26,6 +27,7 @@ const App = ( ) => {
 				<Route path='/businessDashboard' element={<BusinessDashboardPage />}>
 					<Route path='createProduct' element={<BusinessProductCreation />} />
 					<Route path='analytics' element={<BusinessAnalyticsGrid />} />
+					<Route path='orders' element={ <BusinessOrderGrid /> } />
 					{/* Add more nested routes here */}
 				</Route>
 

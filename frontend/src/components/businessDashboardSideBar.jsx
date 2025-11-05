@@ -1,5 +1,5 @@
 import { useState } from "react";
-import {FiPlus, FiUserPlus, FiChevronLeft, FiChevronRight, FiPlusCircle, FiMenu} from "react-icons/fi";
+import {FiPlus, FiUserPlus, FiChevronLeft, FiChevronRight, FiPlusCircle, FiMenu, FiList} from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -32,29 +32,41 @@ const BusinessDashboardSideBar = () => {
                 {/* Top section */}
                 <div className="flex flex-col p-4 space-y-4">
                     <button 
-                    className={`
-                        flex items-center px-3 py-2 text-sm font-medium rounded-md
-                        ${isActive('/businessDashboard/createProduct') ? 'bg-gray-200 dark:bg-gray-700' : ''}
-                        text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all
-                        ${isCollapsed ? "justify-center" : "justify-start"}
-                    `}
-                    onClick={() => handleNavigate('/businessDashboard/createProduct')}
-                    >
-                        <FiMenu className="text-xl" />
-                        {!isCollapsed && <span className="ml-2">Create Product</span>}
+                        className={`
+                            flex items-center px-3 py-2 text-sm font-medium rounded-md
+                            ${isActive('/businessDashboard/createProduct') ? 'bg-gray-200 dark:bg-gray-700' : ''}
+                            text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all
+                            ${isCollapsed ? "justify-center" : "justify-start"}
+                        `}
+                        onClick={() => handleNavigate('/businessDashboard/createProduct')}
+                        >
+                            <FiMenu className="text-xl" />
+                            {!isCollapsed && <span className="ml-2">Create Product</span>}
                     </button>
                     <button 
-                    className={`
-                        flex items-center px-3 py-2 text-sm font-medium rounded-md
-                        ${isActive('/dashboard/createProduct') ? 'bg-gray-200 dark:bg-gray-700' : ''}
-                        text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all
-                        ${isCollapsed ? "justify-center" : "justify-start"}
-                    `}
-                    onClick={() => handleNavigate('/businessDashboard/analytics')}
-                    >
-                        <FiPlus className="text-xl" />
-                        {!isCollapsed && <span className="ml-2">Analytics</span>}
+                        className={`
+                            flex items-center px-3 py-2 text-sm font-medium rounded-md
+                            ${isActive('/dashboard/createProduct') ? 'bg-gray-200 dark:bg-gray-700' : ''}
+                            text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all
+                            ${isCollapsed ? "justify-center" : "justify-start"}
+                        `}
+                        onClick={() => handleNavigate('/businessDashboard/analytics')}
+                        >
+                            <FiPlus className="text-xl" />
+                            {!isCollapsed && <span className="ml-2">Analytics</span>}
                     </button>
+                    <button 
+                        className={`
+                            flex items-center px-3 py-2 text-sm font-medium rounded-md
+                            ${isActive('/dashboard/orders') ? 'bg-gray-200 dark:bg-gray-700' : ''}
+                            text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all
+                            ${isCollapsed ? "justify-center" : "justify-start"}
+                        `}
+                        onClick={() => handleNavigate('/businessDashboard/orders')}
+                        >
+                            <FiList className="text-xl" />
+                            {!isCollapsed && <span className="ml-2">Orders</span>}
+                        </button>
                 </div>
 
                 {/* Collapse Button */}

@@ -271,48 +271,56 @@ export const getBusinessAnalytics = async (req, res) => {
     }
 };
 
-// Get specific time period analytics
 export const getTimeRangeAnalytics = async (req, res) => {
-    try {
-        const { businessId, startDate, endDate } = req.body;
+  try {
+    const { businessId, startDate, endDate } = req.body;
+    const start = new Date(startDate);
+    const end = new Date(endDate);
 
-        const start = new Date(startDate);
-        const end = new Date(endDate);
+    // Fetch orders in the range
+    const orders = await Order.find({
+      businessId,
+      createdAt: { $gte: start, $lte: end },
+      status: { $ne: "Cancelled" }
+    })
+      .populate("userId", "email")
+      .sort({ createdAt: -1 })
+      .lean();
 
-        const analytics = await Order.aggregate([
-            {
-                $match: {
-                    businessId: new mongoose.Types.ObjectId(businessId),
-                    createdAt: { $gte: start, $lte: end },
-                    status: { $ne: 'Cancelled' }
-                }
-            },
-            {
-                $group: {
-                    _id: {
-                        year: { $year: "$createdAt" },
-                        month: { $month: "$createdAt" },
-                        day: { $dayOfMonth: "$createdAt" }
-                    },
-                    totalSales: { $sum: "$totalValue" },
-                    orderCount: { $sum: 1 }
-                }
-            },
-            {
-                $sort: { "_id.year": 1, "_id.month": 1, "_id.day": 1 }
-            }
-        ]);
+    // Daily aggregates (optional, for charts)
+    const analytics = await Order.aggregate([
+      {
+        $match: {
+          businessId: new mongoose.Types.ObjectId(businessId),
+          createdAt: { $gte: start, $lte: end },
+          status: { $ne: "Cancelled" }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            year: { $year: "$createdAt" },
+            month: { $month: "$createdAt" },
+            day: { $dayOfMonth: "$createdAt" }
+          },
+          totalSales: { $sum: "$totalValue" },
+          orderCount: { $sum: 1 }
+        }
+      },
+      { $sort: { "_id.year": 1, "_id.month": 1, "_id.day": 1 } }
+    ]);
 
-        res.status(200).json({
-            success: true,
-            analytics: analytics
-        });
-
-    } catch (error) {
-        console.error('Error fetching time range analytics:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to fetch analytics'
-        });
-    }
+    res.status(200).json({
+      success: true,
+      orders,      // <<< important!
+      analytics    // optional, for charts
+    });
+  } catch (error) {
+    console.error("Error fetching time range analytics:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch analytics",
+      error: error.message
+    });
+  }
 };

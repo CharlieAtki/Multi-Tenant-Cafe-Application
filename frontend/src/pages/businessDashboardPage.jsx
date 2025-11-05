@@ -68,11 +68,11 @@ const BusinessDashboardPage = () => {
     }, [userData]);
 
     return (
-        <div className="flex flex-col min-h-screen bg-gray-100 dark:bg-gray-800">
+        <div className="flex flex-col h-screen bg-gray-100 dark:bg-gray-800">
             <NavigationBar />
-            <div className="flex flex-1">
+            <div className="flex flex-1 overflow-hidden">
                 <BusinessDashboardSideBar />
-                <main className="flex-1 p-4 overflow-y-auto">
+                <main className="flex-1 overflow-y-auto p-4 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200 dark:scrollbar-thumb-gray-600 dark:scrollbar-track-gray-800">
                     <Outlet context={{ userData }} />
                 </main>
             </div>

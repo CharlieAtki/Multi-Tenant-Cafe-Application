@@ -118,7 +118,7 @@ const BusinessProductCreation = () => {
     };
 
     return (
-        <div className="p-6 bg-white dark:bg-gray-700 rounded-lg shadow-md w-full max-w-7xl">
+        <div className="p-6 bg-white dark:bg-gray-700 rounded-lg shadow-md w-full max-w-7xl mx-auto">
             <h2 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-gray-200">Create New Product</h2>
 
             <form className="space-y-4" onSubmit={handleSubmit}>
