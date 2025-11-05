@@ -312,8 +312,10 @@ export const getTimeRangeAnalytics = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      orders,      // <<< important!
-      analytics    // optional, for charts
+      analyticsData: {
+        orders,
+        analytics
+      }
     });
   } catch (error) {
     console.error("Error fetching time range analytics:", error);
