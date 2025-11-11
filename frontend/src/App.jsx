@@ -12,6 +12,7 @@ import LandingPage from './pages/landingPage';
 import BusinessAnalyticsGrid from './components/businessDashboardSubComponents/businessAnalyticsGrid';
 import BusinessOrderGrid from './components/businessDashboardSubComponents/businessOrderGird';
 import BusinessEmployeeGrid from './components/businessDashboardSubComponents/businessEmployeeGrid';
+import BusinessJoinPage from './pages/businessJoinPage';
 
 const App = ( ) => {
 	return (
@@ -34,6 +35,7 @@ const App = ( ) => {
 				</Route>
 
 				<Route path='/businessCreation' element={ <BusinessCreationPage /> } />
+				<Route path='/businessJoin' element={ <BusinessJoinPage /> } />
 
 				<Route path='/' element={ <LandingPage /> } />
 			</Routes>

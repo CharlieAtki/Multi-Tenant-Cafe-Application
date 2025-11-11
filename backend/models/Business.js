@@ -16,6 +16,12 @@ const businessSchema = new mongoose.Schema({
             ref: 'User',
         },
     ],
+    onBoardingRequests: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+        },
+    ],
     location: {
         type: String,
     },

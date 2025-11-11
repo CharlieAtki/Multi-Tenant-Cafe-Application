@@ -74,39 +74,49 @@ const BusinessEmployeeGrid = () => {
     if (!businessData) return null;
 
     return (
-        <div className="flex flex-col gap-6 p-6 bg-gray-100 dark:bg-gray-900 rounded-2xl">
-            <h1 className="text-gray-600 text-xl font-semibold">
-                Business Info: {businessData.businessName}
-            </h1>
+        <div className="space-y-6">
+            {/* Current Employee Information */}
+            <div className="flex flex-col gap-6 p-6 bg-gray-100 dark:bg-gray-900 rounded-2xl">
+                <h1 className="text-gray-600 dark:text-gray-300 text-xl font-semibold">
+                    Business Name: {businessData.businessName}
+                </h1>
 
-            <table className="min-w-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800">
-                <thead className="bg-gray-200 dark:bg-gray-700">
-                    <tr>
-                        <th className="border px-4 py-2 text-left">Business Name</th>
-                        <th className="border px-4 py-2 text-left">Owner</th>
-                        <th className="border px-4 py-2 text-left">Employees</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td className="border px-4 py-2">{businessData.businessName}</td>
-                        <td className="border px-4 py-2">
-                            {businessData.owner?.email || "N/A"}
-                        </td>
-                        <td className="border px-4 py-2">
-                            {businessData.employees && businessData.employees.length > 0 ? (
-                                <ul className="list-disc list-inside">
-                                    {businessData.employees.map((emp) => (
-                                        <li key={emp._id}>{emp.email}</li>
-                                    ))}
-                                </ul>
-                            ) : (
-                                <span>No employees</span>
-                            )}
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+                <table className="min-w-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800">
+                    <thead className="bg-gray-200 dark:bg-gray-700">
+                        <tr>
+                            <th className="border border-black px-4 py-2 text-left">Business Name</th>
+                            <th className="border border-black px-4 py-2 text-left">Owner</th>
+                            <th className="border border-black px-4 py-2 text-left">Employees</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td className="border border-black px-4 py-2 text-gray-600 dark:text-gray-300">{businessData.businessName}</td>
+                            <td className="border border-black px-4 py-2 text-gray-600 dark:text-gray-300">
+                                {businessData.owner?.email || "N/A"}
+                            </td>
+                            <td className="border border-black px-4 py-2 text-gray-600 dark:text-gray-300">
+                                {businessData.employees && businessData.employees.length > 0 ? (
+                                    <ul className="list-disc list-inside">
+                                        {businessData.employees.map((emp) => (
+                                            <li key={emp._id} className="text-gray-600 dark:text-gray-300">{emp.email}</li>
+                                        ))}
+                                    </ul>
+                                ) : (
+                                    <span>No employees</span>
+                                )}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            {/* Employee onboarding */}
+            <div className="flex flex-col gap-6 p-6 bg-gray-100 dark:bg-gray-900 rounded-2xl">
+                <h1 className="text-gray-600 dark:text-gray-300 text-xl font-semibold">
+                    Employee Onboarding
+                </h1>
+            </div>
         </div>
     );
 };
