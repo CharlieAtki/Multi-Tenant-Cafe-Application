@@ -139,7 +139,7 @@ const NavigationBar = () => {
                         ))}
                         {/* Business Creation Link */}
                         {userData ? (
-                            userData.user.business.userRole === 'owner' ? (
+                            userData.user.business.userRole === 'owner' || userData.user.business.userRole === 'employee' ? (
                                 currentLocation !== '/businessDashboard' && currentLocation !== '/businessDashboard/createProduct' ? (
                                     // Go to the business dashboard
                                     <button
@@ -159,16 +159,19 @@ const NavigationBar = () => {
                                 </button>
                             )
                         ) : null}
-                        {userData ? (
-                            userData.user.business && currentLocation === '/marketplace' ? (
+                        {userData && (
+                            (!userData.user.business ||
+                                (userData.user.business.userRole !== 'owner' &&
+                                userData.user.business.userRole !== 'employee')) &&
+                            currentLocation !== '/businessDashboard' && (
                                 <button
                                     onClick={() => handleNavigation("/businessJoin")}
                                     className="text-sm dark:text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-2 rounded-md transition-colors duration-200"
-                                    >
-                                        Join Business
-                                    </button>
-                            ) : null
-                        ) : null}
+                                >
+                                    Join Business
+                                </button>
+                            )
+                            )}
                         {!userData && (
                             <button
                                 onClick={() => handleNavigation("/accountLogin")}
@@ -249,7 +252,7 @@ const NavigationBar = () => {
                         </button>
                     ))}
                     {userData ? (
-                        userData.user.business.userRole === 'owner' ? (
+                        userData.user.business.userRole === 'owner' || userData.user.business.userRole === 'employee' ? (
                             currentLocation !== '/businessDashboard' ? (
                                 // Go to the business dashboard
                                 <button
@@ -270,7 +273,7 @@ const NavigationBar = () => {
                         )
                     ) : null}
                     {userData ? (
-                        !userData.user.business && currentLocation === '/marketplace' ? (
+                        !userData.user.business && currentLocation !== '/businessDashboard' ? (
                             <button
                                 onClick={() => handleNavigation("/businessJoin")}
                                 className="dark:text-gray-300 hover:text-white hover:bg-gray-700 block px-3 py-2 rounded-md text-base font-medium w-full text-left transition-colors duration-200"

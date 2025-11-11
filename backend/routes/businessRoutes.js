@@ -1,5 +1,5 @@
 import express from 'express';
-import { createBusiness, getBusinessAnalytics, getTimeRangeAnalytics, fetchCurrentBusinessInfo, joinBusiness } from '../controller/businessController.js';
+import { createBusiness, getBusinessAnalytics, getTimeRangeAnalytics, fetchCurrentBusinessInfo, joinBusiness, acceptOnboardingRequest } from '../controller/businessController.js';
 
 const router = express.Router();
 
@@ -12,6 +12,7 @@ router.post('/analytics/timerange', getTimeRangeAnalytics);
 router.post('/fetchCurrentBusinessInfo', fetchCurrentBusinessInfo);
 
 router.post('/joinBusiness', joinBusiness);
+router.post('/acceptOnboardingRequest', acceptOnboardingRequest);
 
 export default router;
 

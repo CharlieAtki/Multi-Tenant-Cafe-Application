@@ -341,7 +341,8 @@ export const fetchCurrentBusinessInfo = async (req, res) => {
         // Fetching business data with populated owner and employees
         const business = await Business.findById(businessId)
             .populate('owner', 'email')       // owner will have only email
-            .populate('employees', 'email');  // employees will have only email
+            .populate('employees', 'email')  // employees will have only email
+            .populate('onBoardingRequests', 'email'); // onboarding requests will have only email
 
         if (!business) {
             return res.status(404).json({
