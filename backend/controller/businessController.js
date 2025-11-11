@@ -548,3 +548,61 @@ export const rejectOnboardingRequest = async (req, res) => {
         });
     }
 };
+
+export const removeEmployeeFromBusiness = async (req, res) => {
+    try {
+        const { businessId, userEmail } = req.body; // Safely deconstructing the request body
+
+        // Checks fields exist
+        if (!businessId || !userEmail) {
+            return res.status(400).json({
+                success: false,
+                message: "Business ID and user email are required"
+            });
+        }
+
+        const business = await Business.findById(businessId); // Fetching business data
+
+        // Check if business exists
+        if (!business) {
+            return res.status(404).json({
+                success: false,
+                message: "Business not found"
+            });
+        }
+
+        const user = await User.findOne({ email: userEmail }); // Finding user by email
+
+        // Check if user exists
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        // Remove user from employees array if present
+        business.employees = business.employees.filter(
+            (userId) => !userId.equals(user._id)
+        );
+
+        // Clear user's business info
+        user.business = undefined;
+
+        // Save both documents
+        await user.save();
+        await business.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "User removed from business successfully"
+        });
+
+    } catch (error) {
+        console.error("Error removing employee fromn the business:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        });
+    }
+};
