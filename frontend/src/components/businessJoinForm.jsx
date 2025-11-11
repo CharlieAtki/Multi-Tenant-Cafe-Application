@@ -119,7 +119,7 @@ const BusinessJoinForm = () => {
         if (response.ok) {
             // Business created successfully
             // You can navigate the user or update UI here
-            navigate("/businessDashboard"); // e.g., redirect to dashboard
+            navigate("/marketplace"); // e.g., redirect to dashboard
         } else {
             // Handle backend errors (e.g., business name already taken)
             if (data.field === "businessName") {
