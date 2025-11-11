@@ -150,8 +150,50 @@ const BusinessEmployeeGrid = () => {
         }
     };
 
+    const handleRemoveEmployee = async (userEmail) => {
+        try {
+            setActionLoading(userEmail);
+            setError(null);
+            setSuccessMessage(null);
+
+            const response = await makeAuthenticatedRequest(
+                `${backendUrl}/api/business-unAuth/removeEmployeeFromBusiness`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        businessId: userData.business.businessId,
+                        userEmail: userEmail,
+                    }),
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(data.message || "Failed to remove employee");
+            }
+
+            setSuccessMessage(`Successfully removed ${userEmail} from your business!`);
+
+            // Refresh business data
+            await fetchData();
+
+            // Clear success message after 3 seconds
+            setTimeout(() => setSuccessMessage(null), 3000);
+
+        } catch (err) {
+            console.error("Error removing employee:", err);
+            setError(err.message || "Failed to remove employee");
+        } finally {
+            setActionLoading(null);
+        }
+    }
+
     // Defining if the current user is the business owner (True/False)
     const isOwner = userData?.business?.userRole === "owner";
+
+    const isEmployee = userData?.business?.userRole === "employee";
 
     if (loading) {
         return (
@@ -314,6 +356,28 @@ const BusinessEmployeeGrid = () => {
                                                 {isBusinessOwner ? 'Owner' : 'Employee'}
                                             </p>
                                         </div>
+
+                                        {/* Remove user from the business */}
+                                        {isOwner && employee.email !== userData.email && (
+                                            <div>
+                                                <button
+                                                onClick={() => handleRemoveEmployee(employee.email)}
+                                                className="
+                                                    flex items-center justify-center
+                                                    w-8 h-8
+                                                    rounded-full
+                                                    bg-red-500 text-white
+                                                    hover:bg-red-600 hover:scale-110
+                                                    active:scale-95
+                                                    transition-all duration-200
+                                                    shadow-md hover:shadow-lg
+                                                "
+                                                title="Remove Employee"
+                                                >
+                                                <X className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             );
