@@ -363,3 +363,69 @@ export const fetchCurrentBusinessInfo = async (req, res) => {
         });
     }
 };
+
+export const joinBusiness = async (req, res) => {
+    try {
+        const { businessName, userEmail } = req.body;
+
+        if (!businessName || !userEmail) {
+            return res.status(400).json({
+                success: false,
+                message: "Business name and user email are required"
+            });
+        }
+
+        // Find business by name
+        const business = await Business.findOne({ businessName: businessName });
+        
+        // Check if business exists
+        if (!business) {
+            return res.status(404).json({
+                success: false,
+                message: "Business not found"
+            });
+        }
+
+        const user = await User.findOne({ email: userEmail });
+        
+        // Check if user exists
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        // Check if user is already an employee
+        if (business.employees.includes(user._id)) {
+            return res.status(400).json({
+                success: false,
+                message: "User is already an employee of this business"
+            });
+        }
+
+        // Add user to business employees
+        business.employees.push(user._id);
+        await business.save();
+
+        // Update user's business info
+        user.business = {
+            businessId: business._id,
+            businessName: business.businessName,
+            userRole: 'employee'
+        };
+
+        await user.save();
+        return res.status(200).json({
+            success: true,
+            message: "User added to business successfully"
+        });
+
+    } catch (error) {
+        console.error("Error in joinBusiness:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        });
+    }
+}

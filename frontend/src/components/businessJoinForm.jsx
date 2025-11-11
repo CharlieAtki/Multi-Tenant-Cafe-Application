@@ -5,7 +5,7 @@ import makeAuthenticatedRequest from "../utils/api";
 
 const BusinessJoinForm = () => {
     const [userData, setUserData] = useState(null)
-    const [input, setInput] = useState({ businessName: "", owner: "" }); // initialize empty owner
+    const [input, setInput] = useState({ businessName: "" }); // initialize empty owner
     const [businessNameInputError, setBusinessNameInputError] = useState(false);
     const [businessNameInputValidityError, setBusinessNameInputValidityError] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -103,14 +103,14 @@ const BusinessJoinForm = () => {
         if (hasError) return;
 
         try {
-        const response = await fetch(`${backendUrl}/api/business-unAuth/createBusiness`, {
+        const response = await fetch(`${backendUrl}/api/business-unAuth/joinBusiness`, {
             method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     "Accept": "application/json",
                 },
             credentials: "include",
-            body: JSON.stringify(input),
+            body: JSON.stringify({ businessName: input.businessName, userEmail: userData.email}),
         });
 
         const data = await response.json();

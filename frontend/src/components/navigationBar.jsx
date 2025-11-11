@@ -160,7 +160,7 @@ const NavigationBar = () => {
                             )
                         ) : null}
                         {userData ? (
-                            currentLocation === '/marketplace' ? (
+                            userData.user.business && currentLocation === '/marketplace' ? (
                                 <button
                                     onClick={() => handleNavigation("/businessJoin")}
                                     className="text-sm dark:text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-2 rounded-md transition-colors duration-200"
@@ -270,7 +270,7 @@ const NavigationBar = () => {
                         )
                     ) : null}
                     {userData ? (
-                        currentLocation === '/marketplace' ? (
+                        !userData.user.business && currentLocation === '/marketplace' ? (
                             <button
                                 onClick={() => handleNavigation("/businessJoin")}
                                 className="dark:text-gray-300 hover:text-white hover:bg-gray-700 block px-3 py-2 rounded-md text-base font-medium w-full text-left transition-colors duration-200"
