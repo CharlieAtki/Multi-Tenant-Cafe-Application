@@ -1,5 +1,5 @@
 import express from 'express';
-import { createBusiness, getBusinessAnalytics, getTimeRangeAnalytics, fetchCurrentBusinessInfo, joinBusiness, acceptOnboardingRequest } from '../controller/businessController.js';
+import { createBusiness, getBusinessAnalytics, getTimeRangeAnalytics, fetchCurrentBusinessInfo, joinBusiness, acceptOnboardingRequest, rejectOnboardingRequest } from '../controller/businessController.js';
 
 const router = express.Router();
 
@@ -11,8 +11,10 @@ router.post('/analytics/timerange', getTimeRangeAnalytics);
 
 router.post('/fetchCurrentBusinessInfo', fetchCurrentBusinessInfo);
 
+// Routes for managing business joining and onboarding
 router.post('/joinBusiness', joinBusiness);
 router.post('/acceptOnboardingRequest', acceptOnboardingRequest);
+router.post('/rejectOnboardingRequest', rejectOnboardingRequest);
 
 export default router;
 

@@ -111,8 +111,43 @@ const BusinessEmployeeGrid = () => {
     };
 
     const handleRejectRequest = async (userEmail) => {
-        // TODO: Implement reject functionality on backend
-        alert(`Reject functionality for ${userEmail} - to be implemented`);
+        try {
+            setActionLoading(userEmail);
+            setError(null);
+            setSuccessMessage(null);
+
+            const response = await makeAuthenticatedRequest(
+                `${backendUrl}/api/business-unAuth/rejectOnboardingRequest`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        businessId: userData.business.businessId,
+                        userEmail: userEmail,
+                    }),
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(data.message || "Failed to reject request");
+            }
+
+            setSuccessMessage(`Successfully rejected ${userEmail} from your business!`);
+
+            // Refresh business data
+            await fetchData();
+
+            // Clear success message after 3 seconds
+            setTimeout(() => setSuccessMessage(null), 3000);
+
+        } catch (err) {
+            console.error("Error rejecting request:", err);
+            setError(err.message || "Failed to reject request");
+        } finally {
+            setActionLoading(null);
+        }
     };
 
     // Defining if the current user is the business owner (True/False)

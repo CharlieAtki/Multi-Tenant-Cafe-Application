@@ -493,3 +493,58 @@ export const acceptOnboardingRequest = async (req, res) => {
         });
     }
 };
+
+export const rejectOnboardingRequest = async (req, res) => {
+    try {
+        const { businessId, userEmail } = req.body; // Safely deconstructing the request body
+
+        // Checks fields exist
+        if (!businessId || !userEmail) {
+            return res.status(400).json({
+                success: false,
+                message: "Business ID and user email are required"
+            });
+        }
+
+        const business = await Business.findById(businessId); // Fetching business data
+
+        // Check if business exists
+        if (!business) {
+            return res.status(404).json({
+                success: false,
+                message: "Business not found"
+            });
+        }
+
+        const user = await User.findOne({ email: userEmail }); // Finding user by email
+
+        // Check if user exists
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        // Remove user from onboarding requests if present
+        // Iterates through onBoardingRequests and filters out the user, which is then reassigned to the onBoardingRequests array
+        business.onBoardingRequests = business.onBoardingRequests.filter(
+            (userId) => !userId.equals(user._id)
+        );
+
+        // Save the updated business document
+        await business.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "Onboarding request rejected successfully"
+        });
+
+    } catch (error) {
+        console.error("Error in rejectOnboardingRequest:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        });
+    }
+};
