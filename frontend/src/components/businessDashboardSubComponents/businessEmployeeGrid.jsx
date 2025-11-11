@@ -116,6 +116,8 @@ const BusinessEmployeeGrid = () => {
                 <h1 className="text-gray-600 dark:text-gray-300 text-xl font-semibold">
                     Employee Onboarding
                 </h1>
+                {businessData.onBoardingRequests && businessData.onBoardingRequests.length > 0 ? (
+                    ) :}
             </div>
         </div>
     );

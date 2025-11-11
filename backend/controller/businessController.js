@@ -396,26 +396,19 @@ export const joinBusiness = async (req, res) => {
             });
         }
 
-        // Check if user is already an employee
-        if (business.employees.includes(user._id)) {
+        // Check if user is already an employee or has a pending onboarding request
+        if (business.employees.includes(user._id) || business.onBoardingRequests.includes(user._id)) {
             return res.status(400).json({
                 success: false,
-                message: "User is already an employee of this business"
+                message: "User is already an employee of this business or has a pending onboarding request"
             });
         }
 
-        // Add user to business employees
-        business.employees.push(user._id);
-        await business.save();
+        // Add user to business onboarding requests
+        business.onBoardingRequests.push(user._id);
 
-        // Update user's business info
-        user.business = {
-            businessId: business._id,
-            businessName: business.businessName,
-            userRole: 'employee'
-        };
+        await business.save(); // Save the updated business document
 
-        await user.save();
         return res.status(200).json({
             success: true,
             message: "User added to business successfully"
@@ -429,3 +422,73 @@ export const joinBusiness = async (req, res) => {
         });
     }
 }
+
+export const acceptOnboardingRequest = async (req, res) => {
+    try {
+        const { businessId, userEmail } = req.body; // Safely deconstruct userEmail
+        
+        // Checks fields exist
+        if (!businessId || !userEmail) {
+            return res.status(400).json({
+                success: false,
+                message: "Business ID and user email are required"
+            });
+        }
+
+        // Fetching business data
+        const business = await Business.findById(businessId);
+
+        // Check if business exists
+        if (!business) {
+            return res.status(404).json({
+                success: false,
+                message: "Business not found"
+            });
+        }
+
+        // Find user by email
+        const user = await User.findOne({ email: userEmail });
+
+        // Check if user exists
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        // Add user to employees if not already present
+        user.business = {
+            businessId: business._id,
+            businessName: business.businessName,
+            userRole: 'employee'
+        };
+
+        // Remove user from onboarding requests if present
+        // Iterates through onBoardingRequests and filters out the user, which is then reassigned to the onBoardingRequests array
+        business.onBoardingRequests = business.onBoardingRequests.filter(
+            (userId) => !userId.equals(user._id)
+        );
+
+        // Add user to employees array if not already an employee
+        if (!business.employees.includes(user._id)) {
+            business.employees.push(user._id);
+        }
+
+        // Save both documents
+        await user.save();
+        await business.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "Onboarding request accepted successfully"
+        });
+
+    } catch (error) {
+        console.error("Error in acceptOnboardingRequest:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        });
+    }
+};
