@@ -223,10 +223,10 @@ const BusinessEmployeeGrid = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-100 dark:bg-gray-900 p-6">
+        <div className="min-h-screen bg-gray-100 dark:bg-gray-800 p-6">
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-6">
+                <div className="bg-white dark:bg-gray-700 rounded-2xl shadow-lg p-6 mb-6">
                     <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">
                         {businessData?.businessName}
                     </h1>
@@ -257,7 +257,7 @@ const BusinessEmployeeGrid = () => {
                 {/* Pending Onboarding Requests
                     If the user is the owner of the business, show onboarding requests. */}
                 {isOwner && businessData?.onBoardingRequests?.length > 0 && (
-                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-6">
+                    <div className="bg-white dark:bg-gray-700 rounded-2xl shadow-lg p-6 mb-6">
                         <div className="flex items-center gap-2 mb-4">
                             <UserPlus className="w-6 h-6 text-blue-600" />
                             <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
@@ -272,7 +272,7 @@ const BusinessEmployeeGrid = () => {
                             {businessData.onBoardingRequests.map((request) => (
                                 <div
                                     key={request._id}
-                                    className="bg-gray-50 dark:bg-gray-700 p-4 rounded-xl border-2 border-blue-200 dark:border-blue-800"
+                                    className="bg-gray-50 dark:bg-gray-800 p-4 rounded-xl border-2 border-blue-200 dark:border-blue-800"
                                 >
                                     <div className="flex items-center gap-3 mb-3">
                                         <div className="bg-blue-100 dark:bg-blue-900 p-2 rounded-full">
@@ -316,7 +316,7 @@ const BusinessEmployeeGrid = () => {
                 )}
 
                 {/* Current Employees */}
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
+                <div className="bg-white dark:bg-gray-700 rounded-2xl shadow-lg p-6">
                     <div className="flex items-center gap-2 mb-4">
                         <Users className="w-6 h-6 text-gray-700 dark:text-gray-300" />
                         <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
@@ -334,7 +334,7 @@ const BusinessEmployeeGrid = () => {
                             return (
                                 <div
                                     key={employee._id}
-                                    className="bg-gray-50 dark:bg-gray-700 p-4 rounded-xl border border-gray-200 dark:border-gray-600"
+                                    className="bg-gray-50 dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-600"
                                 >
                                     <div className="flex items-center gap-3">
                                         <div className={`p-2 rounded-full ${
