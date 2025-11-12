@@ -1,6 +1,6 @@
 import MarketplaceGrid from "../components/marketPlaceGrid";
 import NavigationBar from "../components/navigationBar";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, ArrowUpIcon } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import makeAuthenticatedRequest from "../utils/api.js";
@@ -97,12 +97,16 @@ const MarketplacePage = () => {
             const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
             const scrolled = (winScroll / height) * 100;
             setScrollProgress(scrolled);
-            setScrollVisible(winScroll > 500);
+            setScrollVisible(winScroll > 700);
         };
 
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
+
+    const scrollToTop = () => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    };
 
     // Callback function to refresh user data after checkout update
     const handleCheckoutUpdate = async () => {
@@ -138,7 +142,7 @@ const MarketplacePage = () => {
     }
 
     return (
-        <div className="flex flex-col min-h-screen">
+        <div className="flex flex-col min-h-screen dark:bg-gray-800">
             {/* Progress Bar */}
             <div className="fixed top-0 left-0 w-full h-1 z-50">
                 <div
@@ -176,6 +180,19 @@ const MarketplacePage = () => {
                         {cartItemCount}
                     </span>
                 )}
+            </button>
+
+            {/* Floating Scroll-to-Top Button */}
+            <button
+                onClick={scrollToTop}
+                className={`fixed bottom-6 left-6 p-4 rounded-full shadow-lg transition-all duration-300 ${
+                scrollVisible
+                    ? "opacity-100 scale-100"
+                    : "opacity-0 scale-90 pointer-events-none"
+                } bg-indigo-600 hover:bg-indigo-700 text-white`}
+                aria-label="Scroll to top"
+            >
+                <ArrowUpIcon className="w-6 h-6" />
             </button>
         </div>
     );

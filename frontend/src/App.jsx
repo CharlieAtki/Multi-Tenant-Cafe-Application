@@ -13,6 +13,7 @@ import BusinessAnalyticsGrid from './components/businessDashboardSubComponents/b
 import BusinessOrderGrid from './components/businessDashboardSubComponents/businessOrderGird';
 import BusinessEmployeeGrid from './components/businessDashboardSubComponents/businessEmployeeGrid';
 import BusinessJoinPage from './pages/businessJoinPage';
+import CustomerOrderPage from './pages/customerOrderPage';
 
 const App = ( ) => {
 	return (
@@ -24,6 +25,7 @@ const App = ( ) => {
 				<Route path='/accountLogin' element={ <LoginForm /> } />
 				<Route path='checkout' element={ <CheckoutPage /> } />
 				<Route path='/agent' element={ <AgentChatPage /> } />
+				<Route path='/orders' element={ <CustomerOrderPage /> } />
 
 				{/* ✅ Nested dashboard layout with children */}
 				<Route path='/businessDashboard' element={<BusinessDashboardPage />}>

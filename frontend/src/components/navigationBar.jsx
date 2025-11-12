@@ -24,6 +24,10 @@ const NavigationBar = () => {
             name: "Agent",
             link: "/agent"
         },
+        {
+            name: "Orders",
+            link: "/orders"
+        }
     ];
 
     // Placeholder user profile data

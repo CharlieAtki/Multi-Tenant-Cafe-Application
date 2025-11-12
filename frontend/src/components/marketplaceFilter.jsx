@@ -1,125 +1,137 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { Search, RefreshCcw } from "lucide-react";
 
 const MarketplaceFilter = ({ filters, onChange }) => {
-    const [local, setLocal] = useState(filters || {});
+  const [local, setLocal] = useState(filters || {});
 
-    // Keep local state in sync if parent resets filters
-    useEffect(() => {
-        setLocal(filters || {});
-    }, [filters]);
+  // Keep local state in sync with parent
+  useEffect(() => {
+    setLocal(filters || {});
+  }, [filters]);
 
-    // Debounced propagate for search to avoid excessive renders
-    useEffect(() => {
-        const id = setTimeout(() => {
-            onChange && onChange(prev => ({ ...prev, search: local.search || "" }));
-        }, 250);
-        return () => clearTimeout(id);
-    }, [local.search, onChange]);
+  // Debounced propagate for search field
+  useEffect(() => {
+    const id = setTimeout(() => {
+      onChange && onChange(prev => ({ ...prev, search: local.search || "" }));
+    }, 300);
+    return () => clearTimeout(id);
+  }, [local.search, onChange]);
 
-    const handleField = useCallback((key, value) => {
-        setLocal(prev => ({ ...prev, [key]: value }));
-        if (key !== 'search') {
-            // immediate propagate for non-search fields
-            onChange && onChange(prev => ({ ...prev, [key]: value }));
-        }
-    }, [onChange]);
+  const handleField = useCallback((key, value) => {
+    setLocal(prev => ({ ...prev, [key]: value }));
+    if (key !== "search") {
+      onChange && onChange(prev => ({ ...prev, [key]: value }));
+    }
+  }, [onChange]);
 
-    const resetFilters = useCallback(() => {
-        const cleared = { search: "", minPrice: "", maxPrice: "", category: "", business: "", sort: "relevance" };
-        setLocal(cleared);
-        onChange && onChange(() => cleared);
-    }, [onChange]);
+  const resetFilters = useCallback(() => {
+    const cleared = {
+      search: "",
+      minPrice: "",
+      maxPrice: "",
+      category: "",
+      business: "",
+      sort: "relevance",
+    };
+    setLocal(cleared);
+    onChange && onChange(() => cleared);
+  }, [onChange]);
 
-    return (
-        <div className="bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-3 sm:px-6 py-3 sticky top-0 z-40">
-            <div className="flex flex-col gap-3">
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-                    {/* Search by name */}
-                    <div className="col-span-1 lg:col-span-2">
-                        <input
-                            type="text"
-                            value={local.search || ""}
-                            onChange={(e) => handleField('search', e.target.value)}
-                            placeholder="Search by name..."
-                            className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        />
-                    </div>
+  return (
+    <div className="backdrop-blur-md bg-white/60 dark:bg-gray-900/60 border-b border-gray-200 dark:border-gray-700 px-4 sm:px-6 py-4 sticky top-0 z-40 shadow-sm">
+      <div className="flex flex-col gap-4">
+        {/* Filter grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
 
-                    {/* Min price */}
-                    <div>
-                        <input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            value={local.minPrice}
-                            onChange={(e) => handleField('minPrice', e.target.value)}
-                            placeholder="Min price"
-                            className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        />
-                    </div>
+          {/* Search Field */}
+          <div className="col-span-1 lg:col-span-2 relative">
+            <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              value={local.search || ""}
+              onChange={(e) => handleField("search", e.target.value)}
+              placeholder="Search products..."
+              className="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-950 text-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+            />
+          </div>
 
-                    {/* Max price */}
-                    <div>
-                        <input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            value={local.maxPrice}
-                            onChange={(e) => handleField('maxPrice', e.target.value)}
-                            placeholder="Max price"
-                            className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        />
-                    </div>
+          {/* Min Price */}
+          <div>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={local.minPrice}
+              onChange={(e) => handleField("minPrice", e.target.value)}
+              placeholder="Min price"
+              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-950 text-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 transition-all"
+            />
+          </div>
 
-                    {/* Category */}
-                    <div>
-                        <input
-                            type="text"
-                            value={local.category}
-                            onChange={(e) => handleField('category', e.target.value)}
-                            placeholder="Category"
-                            className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        />
-                    </div>
+          {/* Max Price */}
+          <div>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={local.maxPrice}
+              onChange={(e) => handleField("maxPrice", e.target.value)}
+              placeholder="Max price"
+              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-950 text-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 transition-all"
+            />
+          </div>
 
-                    {/* Business (ID or name if present) */}
-                    <div>
-                        <input
-                            type="text"
-                            value={local.business}
-                            onChange={(e) => handleField('business', e.target.value)}
-                            placeholder="Business"
-                            className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        />
-                    </div>
+          {/* Category */}
+          <div>
+            <input
+              type="text"
+              value={local.category}
+              onChange={(e) => handleField("category", e.target.value)}
+              placeholder="Category"
+              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-950 text-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 transition-all"
+            />
+          </div>
 
-                    {/* Sort */}
-                    <div>
-                        <select
-                            value={local.sort || 'relevance'}
-                            onChange={(e) => handleField('sort', e.target.value)}
-                            className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        >
-                            <option value="relevance">Sort: Relevance</option>
-                            <option value="price-asc">Price: Low to High</option>
-                            <option value="price-desc">Price: High to Low</option>
-                            <option value="name-asc">Name: A to Z</option>
-                            <option value="name-desc">Name: Z to A</option>
-                        </select>
-                    </div>
-                </div>
+          {/* Business */}
+          <div>
+            <input
+              type="text"
+              value={local.business}
+              onChange={(e) => handleField("business", e.target.value)}
+              placeholder="Business name"
+              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-950 text-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 transition-all"
+            />
+          </div>
 
-                <div className="flex items-center gap-2">
-                    <button
-                        onClick={resetFilters}
-                        className="px-4 py-2 rounded-md bg-gray-200 hover:bg-gray-300 text-gray-800 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600 transition"
-                    >
-                        Reset Filters
-                    </button>
-                </div>
-            </div>
+          {/* Sort */}
+          <div>
+            <select
+              value={local.sort || "relevance"}
+              onChange={(e) => handleField("sort", e.target.value)}
+              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-950 text-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 transition-all"
+            >
+              <option value="relevance">Sort: Relevance</option>
+              <option value="price-asc">Price: Low → High</option>
+              <option value="price-desc">Price: High → Low</option>
+              <option value="name-asc">Name: A → Z</option>
+              <option value="name-desc">Name: Z → A</option>
+            </select>
+          </div>
         </div>
-    );
-}
+
+        {/* Reset Button */}
+        <div className="flex justify-end">
+          <button
+            onClick={resetFilters}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-sm transition-all"
+          >
+            <RefreshCcw className="w-5 h-5" />
+            Reset Filters
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default MarketplaceFilter;
