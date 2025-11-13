@@ -130,12 +130,10 @@ const MarketplacePage = () => {
     // Full-screen loader while backend or token check is in progress
     if (loading) {
         return (
-            <div className="flex items-center justify-center h-screen bg-gray-100 dark:bg-gray-800">
-                <div className="flex flex-col items-center gap-4">
-                    <div className="w-12 h-12 border-4 border-gray-300 border-t-green-500 rounded-full animate-spin"></div>
-                    <p className="text-gray-700 dark:text-gray-200 font-medium text-lg">
-                        Connecting to server...
-                    </p>
+            <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p className="text-gray-600 dark:text-gray-400">Loading your orders...</p>
                 </div>
             </div>
         );
