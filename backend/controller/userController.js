@@ -120,7 +120,9 @@ export const fetchCurrentUserInformation = async (req, res) => {
         // The JWT middleware already decoded the token and put user info in req.user
         const userId = req.user.id; // or req.user._id depending on what you stored in the JWT
 
-        const currentUser = await User.findById(userId).select('-hashedPassword'); // Exclude password from the response
+        const currentUser = await User.findById(userId)
+            .select('-hashedPassword') // Exclude password from the response
+            .sort({ createdAt: -1 });
 
         if (!currentUser) {
             return res.status(404).json({

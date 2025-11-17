@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeft, X, Plus, Minus } from "lucide-react";
+import {ArrowLeft, X, Plus, Minus, Package} from "lucide-react";
 import { useState } from "react";
 import makeAuthenticatedRequest from "../utils/api";
 import { useEffect } from "react";
@@ -216,6 +216,20 @@ const CheckoutOrdersGrid = () => {
                                     key={index}
                                     className="border border-gray-300 dark:border-gray-700 rounded-lg p-4 flex items-center justify-between gap-4"
                                 >
+                                    <div className="w-12 h-12 bg-gray-200 dark:bg-gray-600 rounded-lg overflow-hidden flex-shrink-0">
+                                        {item.productId?.imageUrl ? (
+                                            <img
+                                                src={item.productId.imageUrl}
+                                                alt={item.productName}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center">
+                                                <Package className="w-6 h-6 text-gray-500 dark:text-gray-400" />
+                                            </div>
+                                        )}
+                                    </div>
+
                                     <div className="flex-1">
                                         <span className="text-gray-700 dark:text-gray-200 font-medium">
                                             {item.productName}

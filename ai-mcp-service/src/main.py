@@ -280,6 +280,97 @@ def fetch_user_checkout(user_email: str):
     except Exception as e:
         return f"⚠️ Error fetching checkout basket: {str(e)}"
 
+@mcp.tool()
+def fetch_user_orders(user_email: str):
+    """
+        Fetches the current user's orders.
+    """
+
+    try:
+        # Check if token is available
+        if not _token:
+            return "❌ Authentication token not available. Please ensure you're logged in."
+
+        payload = {
+            "userEmail": user_email,
+        }
+
+        headers = {
+            "Authorization": f"Bearer {_token}",  # Token is raw, so add Bearer prefix
+            "Content-Type": "application/json"
+        }
+
+        endpoint = f"{EXPRESS_BASE_URL}/api/order-auth/getUserOrders"
+        response = requests.get(endpoint, json=payload, headers=headers, timeout=10) # Making the request
+
+        if response.status_code == 200:
+            data = response.json()
+            return {
+                "success": True,
+                "orders": data.get('orders', []), # Fetch the checkout basket, return an empty list if not present
+                "totalOrders": data.get('totalOrders', 0)
+            }
+        else:
+            # try to parse the JSON message if present
+            error_msg = None
+            try:
+                error_msg = response.json().get('message')
+            except Exception:
+                pass
+            if not error_msg:
+                error_msg = response.text
+            return f"❌ Failed to fetch user orders: {error_msg} (Status: {response.status_code})"
+
+    except Exception as e:
+        return f"⚠️ Error fetching checkout basket: {str(e)}"
+
+@mcp.tool()
+def complete_user_order(user_email: str):
+    """
+        Completes the current user's order.
+    """
+
+    try:
+        # Check if token is available
+        if not _token:
+            return "❌ Authentication token not available. Please ensure you're logged in."
+
+        payload = {
+            "userEmail": user_email,
+        }
+
+        headers = {
+            "Authorization": f"Bearer {_token}",  # Token is raw, so add Bearer prefix
+            "Content-Type": "application/json"
+        }
+
+        endpoint = f"{EXPRESS_BASE_URL}/api/order-auth/completeUserOrder"
+        response = requests.post(endpoint, json=payload, headers=headers, timeout=10)  # Making the request
+
+        if response.status_code == 201:
+            data = response.json()
+            return {
+                "success": True,
+                "message": data.get('message', "No returned message"),
+                "orders": data.get('orders', []),  # Fetch the checkout basket, return an empty list if not present
+                "totalValue": data.get('totalValue', 0),
+                "orderCount": data.get('orderCount', 0),
+            }
+
+        else:
+            # try to parse the JSON message if present
+            error_msg = None
+            try:
+                error_msg = response.json().get('message')
+            except Exception:
+                pass
+            if not error_msg:
+                error_msg = response.text
+            return f"❌ Failed to complete order: {error_msg} (Status: {response.status_code})"
+
+    except Exception as e:
+        return f"⚠️ Error completing order: {str(e)}"
+
 
 # Run the MCP server with HTTP transport
 if __name__ == "__main__":

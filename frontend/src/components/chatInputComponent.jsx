@@ -2,11 +2,11 @@
 import { useState, useRef, useEffect } from "react";
 import { Send, Paperclip } from "lucide-react";
 
-const ChatInput = ({ onSendMessage, isLoading }) => {
+// ChatInput Component
+const ChatInputComponent = ({ onSendMessage, isLoading }) => {
     const [input, setInput] = useState("");
     const textareaRef = useRef(null);
 
-    // Auto-resize textarea
     useEffect(() => {
         if (textareaRef.current) {
             textareaRef.current.style.height = "auto";
@@ -17,8 +17,7 @@ const ChatInput = ({ onSendMessage, isLoading }) => {
         }
     }, [input]);
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
+    const handleSubmit = () => {
         if (input.trim() && !isLoading) {
             onSendMessage(input);
             setInput("");
@@ -31,7 +30,7 @@ const ChatInput = ({ onSendMessage, isLoading }) => {
     const handleKeyDown = (e) => {
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
-            handleSubmit(e);
+            handleSubmit();
         }
     };
 
@@ -43,8 +42,7 @@ const ChatInput = ({ onSendMessage, isLoading }) => {
     ];
 
     return (
-        <div className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 sm:p-6">
-            {/* Suggested Queries - Show only on first message */}
+        <div className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 sm:p-6 flex-shrink-0">
             {input === "" && (
                 <div className="mb-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {suggestedQueries.map((query, idx) => (
@@ -62,8 +60,7 @@ const ChatInput = ({ onSendMessage, isLoading }) => {
                 </div>
             )}
 
-            {/* Input Form */}
-            <form onSubmit={handleSubmit} className="flex gap-2 sm:gap-3">
+            <div className="flex gap-2 sm:gap-3">
                 <textarea
                     ref={textareaRef}
                     value={input}
@@ -75,27 +72,15 @@ const ChatInput = ({ onSendMessage, isLoading }) => {
                     rows="1"
                 />
 
-                <div className="flex gap-1 sm:gap-2">
-                    <button
-                        type="button"
-                        className="p-2 sm:p-3 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                        title="Attach file (coming soon)"
-                        disabled
-                    >
-                        <Paperclip className="w-5 h-5" />
-                    </button>
-
-                    <button
-                        type="submit"
-                        disabled={!input.trim() || isLoading}
-                        className="p-2 sm:p-3 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                        title="Send message (Enter)"
-                    >
-                        <Send className="w-5 h-5" />
-                        <span className="hidden sm:inline text-sm">Send</span>
-                    </button>
-                </div>
-            </form>
+                <button
+                    onClick={handleSubmit}
+                    disabled={!input.trim() || isLoading}
+                    className="p-2 sm:p-3 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-lg"
+                    title="Send message (Enter)"
+                >
+                    📤
+                </button>
+            </div>
 
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                 💡 Tip: You can ask the agent to search for products, add items to your cart, or get product information!
@@ -104,4 +89,4 @@ const ChatInput = ({ onSendMessage, isLoading }) => {
     );
 };
 
-export default ChatInput;
+export default ChatInputComponent;

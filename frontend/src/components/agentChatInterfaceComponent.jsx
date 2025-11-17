@@ -1,30 +1,31 @@
-// frontend/src/components/agentChat/agentChatInterfaceComponent.jsx
 import { useState, useEffect, useRef } from "react";
-import { Loader, MessageCircle, Trash2 } from "lucide-react";
-import ChatMessageComponent from "./chatMessageComponent.jsx";
+import { Loader, MessageCircle, Trash2, User, Bot } from "lucide-react";
+import ChatMessageComponent from "./chatMessageComponent";
 import ChatInputComponent from "./chatInputComponent.jsx";
 
-const AgentChatInterfaceComponent = ({ userData }) => {
+const AgentChatInterface = ({ userData }) => {
     const [messages, setMessages] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
     const messagesEndRef = useRef(null);
+    const messagesContainerRef = useRef(null);
 
     const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
     // Auto-scroll to bottom when new messages arrive
     const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        setTimeout(() => {
+            messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        }, 0);
     };
 
     useEffect(() => {
         scrollToBottom();
-    }, [messages]);
+    }, [messages, isLoading]);
 
     const sendMessage = async (messageText) => {
         if (!messageText.trim()) return;
 
-        // Add user message to chat
         const userMessage = {
             id: Date.now(),
             sender: "user",
@@ -32,7 +33,6 @@ const AgentChatInterfaceComponent = ({ userData }) => {
             timestamp: new Date(),
         };
 
-        // Update UI immediately
         setMessages((prev) => [...prev, userMessage]);
         setError(null);
         setIsLoading(true);
@@ -40,7 +40,6 @@ const AgentChatInterfaceComponent = ({ userData }) => {
         try {
             const accessToken = localStorage.getItem("accessToken");
 
-            // Include past messages in request for context
             const response = await fetch(`${backendUrl}/api/agentChat-auth/agentChat`, {
                 method: "POST",
                 headers: {
@@ -63,7 +62,6 @@ const AgentChatInterfaceComponent = ({ userData }) => {
 
             const data = await response.json();
 
-            // Add agent response
             const agentMessage = {
                 id: Date.now() + 1,
                 sender: "agent",
@@ -76,7 +74,6 @@ const AgentChatInterfaceComponent = ({ userData }) => {
             console.error("Error sending message:", err);
             setError(err.message);
 
-            // Add error message
             const errorMessage = {
                 id: Date.now() + 1,
                 sender: "agent",
@@ -97,9 +94,9 @@ const AgentChatInterfaceComponent = ({ userData }) => {
     };
 
     return (
-        <div className="flex-1 flex flex-col w-full max-w-6xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+        <div className="flex-1 flex flex-col w-full max-w-6xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden h-screen">
             {/* Header */}
-            <div className="bg-gradient-to-r from-blue-600 to-blue-800 dark:from-blue-900 dark:to-blue-950 p-4 sm:p-6 flex items-center justify-between">
+            <div className="bg-gradient-to-r from-blue-600 to-blue-800 dark:from-blue-900 dark:to-blue-950 p-4 sm:p-6 flex items-center justify-between flex-shrink-0">
                 <div className="flex items-center gap-3">
                     <MessageCircle className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                     <div>
@@ -118,8 +115,39 @@ const AgentChatInterfaceComponent = ({ userData }) => {
                 )}
             </div>
 
-            {/* Messages Container */}
-            <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+            {/* Messages Container with Scrollbar */}
+            <div
+                ref={messagesContainerRef}
+                className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4"
+                style={{
+                    scrollBehavior: "smooth",
+                    scrollbarWidth: "thin",
+                    scrollbarColor: "#9ca3af #f3f4f6"
+                }}
+            >
+                <style>{`
+                    div::-webkit-scrollbar {
+                        width: 8px;
+                    }
+                    div::-webkit-scrollbar-track {
+                        background: #f3f4f6;
+                        border-radius: 10px;
+                    }
+                    div::-webkit-scrollbar-thumb {
+                        background: #9ca3af;
+                        border-radius: 10px;
+                    }
+                    div::-webkit-scrollbar-thumb:hover {
+                        background: #6b7280;
+                    }
+                    .dark div::-webkit-scrollbar-track {
+                        background: #1f2937;
+                    }
+                    .dark div::-webkit-scrollbar-thumb {
+                        background: #4b5563;
+                    }
+                `}</style>
+
                 {messages.length === 0 ? (
                     <div className="flex items-center justify-center h-full text-center">
                         <div>
@@ -161,4 +189,4 @@ const AgentChatInterfaceComponent = ({ userData }) => {
     );
 };
 
-export default AgentChatInterfaceComponent;
+export default AgentChatInterface;
