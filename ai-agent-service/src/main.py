@@ -73,6 +73,7 @@ async def agent_chat(req: Request, data: ChatRequest):
             "- If the user says 'Show me the menu', call `search_all_products`.\n"
             "- If they say 'Add an espresso to my order', use `search_product_by_name` to find it, then call `add_item_to_checkout`.\n"
             "- If they say 'Recommend me something', use 'fetch_user_orders' to find what the user has purchased in the past to help you recommend something from the menu.\n"
+            "- If they say 'Hey, I'm not sure what to have for lunch, what do you recommend?', use 'fetch_user_orders' to find what the user has purchased in the past to help you recommend something from the menu.\n"
             "- If they say 'Remove the croissant', identify the product and use `remove_from_checkout`.\n\n"
             
             "🧾 Response formatting:\n"
@@ -91,10 +92,11 @@ async def agent_chat(req: Request, data: ChatRequest):
             "End by asking: 'Let me know if you'd like to add anything to your order or need more details on any item!'"
 
 
-            "Your goal is to provide a smooth, conversational ordering experience that feels natural and reliable."
+            "Your goal is to provide a smooth, conversational ordering experience that feels natural and reliable. Make sure to make recommendations based on the users past orders where possible and any other relevant context."
         )
 
         product_agent = Agent(
+            model="gpt-5.1",
             name="Customer Assistant",
             instructions=instructions,
             mcp_servers=[server],
