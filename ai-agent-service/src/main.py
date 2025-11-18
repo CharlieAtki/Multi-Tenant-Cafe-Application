@@ -101,12 +101,10 @@ async def agent_chat(req: Request, data: ChatRequest):
             instructions=instructions,
             mcp_servers=[server],
             model_settings=ModelSettings(tool_choice="required"),
-            input_guardrails="Ensure you fully understand the user's request before taking any action on their checkout or products and that the request is relevant to the apps function.",
         )
 
         triage_agent = Agent(
             model="gpt-5.1",
-            input_guardrails="Ensure all user requirements are fully understood and relevant to the apps function before taking any action or routing.",
             name="Triage Agent",
             instructions="""
             You are a smart, conversational triage assistant for a JustEat-style café ordering platform. 
