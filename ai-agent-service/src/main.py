@@ -102,7 +102,6 @@ async def agent_chat(req: Request, data: ChatRequest):
             mcp_servers=[server],
             model_settings=ModelSettings(tool_choice="required"),
             input_guardrails="Ensure you fully understand the user's request before taking any action on their checkout or products and that the request is relevant to the apps function.",
-            streaming=True,
         )
 
         triage_agent = Agent(
@@ -142,7 +141,6 @@ async def agent_chat(req: Request, data: ChatRequest):
             by the right specialist or by you when no specialist applies.
             """,
             handoffs=[product_agent],
-            streaming=True,
         )
 
         # 🧠 Build conversation context
