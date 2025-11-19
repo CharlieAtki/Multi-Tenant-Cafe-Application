@@ -93,6 +93,7 @@ async def agent_chat(req: Request, data: ChatRequest):
 
 
             "Your goal is to provide a smooth, conversational ordering experience that feels natural and reliable. Make sure to make recommendations based on the users past orders where possible and any other relevant context."
+            "Do not make up product names or details — always use the exact information retrieved from the backend tools."
         )
 
         product_agent = Agent(
