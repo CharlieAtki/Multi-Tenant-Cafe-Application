@@ -36,9 +36,9 @@ const ChatInputComponent = ({ onSendMessage, isLoading }) => {
 
     const suggestedQueries = [
         "Add an Espresso to my cart",
-        "Show me available products",
+        "Please can you complete my order",
         "What's in my checkout?",
-        "Search for Latte",
+        "Given my past orders, what would you recommend to me from the menu.",
     ];
 
     return (
