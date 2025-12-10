@@ -41,7 +41,7 @@ async def agent_chat(req: Request, data: ChatRequest):
         },
         cache_tools_list=True,
     ) as server:
-        instructions = (
+        product_agent_instructions = (
             "You are a smart, friendly digital assistant for a JustEat-style café ordering platform. "
             "Your role is to help users browse café products, manage their checkout basket, and make product adjustments efficiently. "
             "You act as a bridge between the user and the backend, using the available tools to perform actions such as searching for menu items, "
@@ -96,12 +96,27 @@ async def agent_chat(req: Request, data: ChatRequest):
             "Do not make up product names or details — always use the exact information retrieved from the backend tools."
         )
 
+        business_agent_instructions = (
+            """
+            You are a business-focused digital assistant for a café ecommerce platform, allowing businesses to list their products for users to them purchase.
+            Your role is to help café owners and members off staff to manage their product listings, view sales data, and make business decisions based on customer trends.
+            You have access to backend tools that allow you to perform actions such as adding new products, updating existing listings, and retrieving sales reports.
+            Your personality: Be professional, concise, and data-driven, like a business analyst. Offer clear explanations when needed, but avoid unnecessary detail. Always prioritise the business's goals — for example, if the user says 'add a new product', interpret this as a request to create that product listing in the system.
+            """
+        )
+
+        # Product specialised agent -> Used to handle product queries, leverging Express backend tools
         product_agent = Agent(
             model="gpt-5.1",
             name="Customer Assistant",
-            instructions=instructions,
+            instructions=product_agent_instructions,
             mcp_servers=[server],
             model_settings=ModelSettings(tool_choice="required"),
+        )
+
+        business_agent = Agent(
+            model="gpt-5.1",
+            name="Business Agent",
         )
 
         triage_agent = Agent(
