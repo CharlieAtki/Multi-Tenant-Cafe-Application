@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import Business from "../models/Business.js";
 import User from "../models/User.js";
 import Order from "../models/Order.js";
+import Product from "../models/Product.js";
 
 export const createBusiness = async (req, res) => {
     try {
@@ -695,14 +696,15 @@ export const getCompetitorInsights = async (req, res) => {
             });
         }
 
-        const Product = (await import('../models/Product.js')).default;
-
         // Get all products
         const allProducts = await Product.find({}).lean();
 
         // Find this business's products to determine categories
+        // Convert businessId to string for reliable comparison
+        const businessIdStr = businessId.toString();
+        
         const businessProducts = allProducts.filter(
-            p => p.business?.businessId === businessId
+            p => p.business?.businessId?.toString() === businessIdStr
         );
 
         if (businessProducts.length === 0) {
@@ -723,7 +725,7 @@ export const getCompetitorInsights = async (req, res) => {
         // Find competitor products in same categories (exclude own business)
         const competitorProducts = allProducts.filter(
             p => businessCategories.has((p.category || '').toLowerCase()) &&
-                 p.business?.businessId !== businessId
+                 p.business?.businessId?.toString() !== businessIdStr
         );
 
         if (competitorProducts.length === 0) {
