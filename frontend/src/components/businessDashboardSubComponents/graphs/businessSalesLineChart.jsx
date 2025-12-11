@@ -7,10 +7,25 @@ import {
     CartesianGrid,
     Tooltip,
     Legend,
+    Brush,
 } from "recharts";
 import {useEffect, useState} from "react";
 
-const BusinessSalesLineChart = ({ graphData, metricOne, metricTwo, metricOneUnit, metricTwoUnit }) => {
+const BusinessSalesLineChart = ({ 
+    graphData, 
+    metricOne, 
+    metricTwo, 
+    metricOneUnit, 
+    metricTwoUnit,
+    enableZoom = true,
+    enableAnimation = true,
+    showGrid = true,
+    lineType = "monotone" 
+}) => {
+    const [opacity, setOpacity] = useState({
+        [metricOne]: 1,
+        [metricTwo]: 1,
+    });
     // const [graphData, setGraphData] = useState([]) // state to store dynamic graph data
     // const [error, setError] = useState(false) // state to handle errors
 
@@ -78,28 +93,35 @@ const BusinessSalesLineChart = ({ graphData, metricOne, metricTwo, metricOneUnit
         // StackId allows the visualised data to be added on top of one another.
 
         <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={graphData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+            <LineChart 
+                data={graphData} 
+                margin={{ top: 20, right: 30, left: 20, bottom: enableZoom ? 40 : 20 }}
+            >
                 {/* Axes with labels */}
                     <XAxis
                         dataKey="name"
                         label={{
-                            value: "Weeks", // X-axis label
+                            value: "Time Period",
                             position: "insideBottom",
                             offset: -5,
                             style: { fontSize: 14, fill: "#555" },
                         }}
-                        tick={{ fontSize: 12, fill: "#666" }} // Tick styling
+                        tick={{ fontSize: 12, fill: "#666" }}
+                        angle={graphData?.length > 10 ? -45 : 0}
+                        textAnchor={graphData?.length > 10 ? "end" : "middle"}
+                        height={graphData?.length > 10 ? 80 : 60}
                     />
                     <YAxis
                         label={{
-                            value: "Metric Value", // Y-axis label
+                            value: "Value",
                             angle: -90,
                             position: "insideLeft",
                             style: { textAnchor: "middle", fontSize: 14, fill: "#555" },
                         }}
-                        tick={{ fontSize: 12, fill: "#666" }} // Tick styling
+                        tick={{ fontSize: 12, fill: "#666" }}
+                        width={80}
                     />
-                <CartesianGrid strokeDasharray="5 5" />
+                {showGrid && <CartesianGrid strokeDasharray="5 5" stroke="#e5e7eb" />}
                 <Tooltip
                     content={
                         <CustomTooltip
@@ -112,49 +134,100 @@ const BusinessSalesLineChart = ({ graphData, metricOne, metricTwo, metricOneUnit
                 />
                 <Legend
                     wrapperStyle={{
-                        paddingTop: "20px", // Adds space above the legend
-                        textAlign: "center", // Centers the legend horizontally
+                        paddingTop: "20px",
+                        textAlign: "center",
+                        cursor: "pointer",
+                    }}
+                    onClick={(e) => {
+                        const dataKey = e.dataKey;
+                        setOpacity((prev) => ({
+                            ...prev,
+                            [dataKey]: prev[dataKey] === 0 ? 1 : 0,
+                        }));
+                    }}
+                    onMouseEnter={(e) => {
+                        const dataKey = e.dataKey;
+                        setOpacity((prev) => ({
+                            ...prev,
+                            [dataKey]: 0.5,
+                        }));
+                    }}
+                    onMouseLeave={(e) => {
+                        const dataKey = e.dataKey;
+                        setOpacity((prev) => ({
+                            ...prev,
+                            [dataKey]: 1,
+                        }));
                     }}
                 />
 
                 <Line
-                    type="monotone"
+                    type={lineType}
                     dataKey={metricOne}
                     stroke="#2563eb"
-                    fill="#3b82f6"
-                    stackId="1"
+                    strokeWidth={3}
+                    strokeOpacity={opacity[metricOne]}
+                    dot={{ r: 5, fill: "#2563eb", strokeWidth: 2 }}
+                    activeDot={{ r: 8, fill: "#1e40af", strokeWidth: 2 }}
+                    animationDuration={enableAnimation ? 800 : 0}
                 />
 
                 <Line
-                    type="monotone"
+                    type={lineType}
                     dataKey={metricTwo}
                     stroke="#7c3aed"
-                    fill="#8b5cf6"
-                    stackId="1"
+                    strokeWidth={3}
+                    strokeOpacity={opacity[metricTwo]}
+                    dot={{ r: 5, fill: "#7c3aed", strokeWidth: 2 }}
+                    activeDot={{ r: 8, fill: "#5b21b6", strokeWidth: 2 }}
+                    animationDuration={enableAnimation ? 800 : 0}
                 />
+                
+                {enableZoom && (
+                    <Brush 
+                        dataKey="name" 
+                        height={30} 
+                        stroke="#8884d8"
+                        fill="#f0f0f0"
+                    />
+                )}
             </LineChart>
        </ResponsiveContainer>
     )
 };
 
 
-// Custom Tooltip - Changes the UI of the tooltip to make it more intuitive
-const CustomTooltip = ({ active, payload, label, metricOne, metricTwo, metricOneUnit, metricTwoUnit  }) => {
+// Enhanced Custom Tooltip with better formatting and styling
+const CustomTooltip = ({ active, payload, label, metricOne, metricTwo, metricOneUnit, metricTwoUnit }) => {
     if (active && payload && payload.length) {
+        const formatValue = (value, unit) => {
+            if (unit === 'GBP' || unit === '£') {
+                return `£${Number(value).toFixed(2)}`;
+            }
+            return `${Number(value).toLocaleString()} ${unit || ''}`;
+        };
+
         return (
-             <div className="p-4 bg-slate-900 flex flex-col gap-4 rounded-md">
-                 <p className="text-medium text-lg text-white">{label}</p>
-                 <p className="text-sm text-blue-400">
-                    {metricOne}:
-                    <span className="ml-2">{`${payload[0].value} ${metricOneUnit || ''}`}</span>
+             <div className="p-4 bg-slate-900 border-2 border-blue-500 flex flex-col gap-3 rounded-lg shadow-xl">
+                 <p className="text-medium text-lg text-white font-bold border-b border-gray-700 pb-2">
+                    {label}
                  </p>
-                 <p className="text-sm text-indigo-400">
-                     {metricTwo}:
-                     <span className="ml-2">{`${payload[1].value} ${metricTwoUnit || ''}`}</span>
-                 </p>
+                 {payload.map((entry, index) => (
+                    <p key={index} className="text-sm flex justify-between items-center gap-4" 
+                       style={{ color: entry.color }}>
+                        <span className="font-medium">{entry.name}:</span>
+                        <span className="font-bold text-white">
+                            {formatValue(entry.value, entry.name === metricOne ? metricOneUnit : metricTwoUnit)}
+                        </span>
+                    </p>
+                 ))}
+                 <div className="pt-2 border-t border-gray-700 text-xs text-gray-400">
+                    Click legend to toggle • Drag to zoom
+                 </div>
              </div>
         );
     }
+    return null;
 };
 
 // exporting the component.

@@ -67,10 +67,10 @@ const formatCurrency = (amount) => {
     }).format(amount);
 };
 
-// Get business dashboard analytics
+// Get business dashboard analytics with date filtering and granularity
 export const getBusinessAnalytics = async (req, res) => {
     try {
-        const { businessId } = req.body;
+        const { businessId, startDate, endDate, granularity = 'weekly' } = req.body;
 
         if (!businessId || !mongoose.Types.ObjectId.isValid(businessId)) {
             return res.status(400).json({
@@ -79,11 +79,16 @@ export const getBusinessAnalytics = async (req, res) => {
             });
         }
 
+        // Set default date range if not provided (last 7 weeks)
+        const end = endDate ? new Date(endDate) : new Date();
+        const start = startDate ? new Date(startDate) : new Date(end.getTime() - 49 * 24 * 60 * 60 * 1000);
+
         // 1. Total Sales and Order Count
         const salesAggregate = await Order.aggregate([
             {
                 $match: {
                     businessId: new mongoose.Types.ObjectId(businessId),
+                    createdAt: { $gte: start, $lte: end },
                     status: { $ne: 'Cancelled' }
                 }
             },
@@ -97,53 +102,120 @@ export const getBusinessAnalytics = async (req, res) => {
             }
         ]);
 
-        // 2. Sales by Time Period (Last 7 weeks)
-        const sevenWeeksAgo = new Date();
-        sevenWeeksAgo.setDate(sevenWeeksAgo.getDate() - 49);
+        // 2. Sales by Time Period with dynamic granularity
+        let groupByExpression;
+        let sortExpression;
+        let projectExpression;
 
-        const salesByWeek = await Order.aggregate([
+        if (granularity === 'daily') {
+            groupByExpression = {
+                year: { $year: "$createdAt" },
+                month: { $month: "$createdAt" },
+                day: { $dayOfMonth: "$createdAt" }
+            };
+            sortExpression = { "_id.year": 1, "_id.month": 1, "_id.day": 1 };
+            projectExpression = {
+                $concat: [
+                    { $toString: "$_id.year" },
+                    "-",
+                    { 
+                        $cond: [
+                            { $lt: ["$_id.month", 10] },
+                            { $concat: ["0", { $toString: "$_id.month" }] },
+                            { $toString: "$_id.month" }
+                        ]
+                    },
+                    "-",
+                    { 
+                        $cond: [
+                            { $lt: ["$_id.day", 10] },
+                            { $concat: ["0", { $toString: "$_id.day" }] },
+                            { $toString: "$_id.day" }
+                        ]
+                    }
+                ]
+            };
+        } else if (granularity === 'monthly') {
+            groupByExpression = {
+                year: { $year: "$createdAt" },
+                month: { $month: "$createdAt" }
+            };
+            sortExpression = { "_id.year": 1, "_id.month": 1 };
+            projectExpression = {
+                $concat: [
+                    {
+                        $switch: {
+                            branches: [
+                                { case: { $eq: ["$_id.month", 1] }, then: "Jan" },
+                                { case: { $eq: ["$_id.month", 2] }, then: "Feb" },
+                                { case: { $eq: ["$_id.month", 3] }, then: "Mar" },
+                                { case: { $eq: ["$_id.month", 4] }, then: "Apr" },
+                                { case: { $eq: ["$_id.month", 5] }, then: "May" },
+                                { case: { $eq: ["$_id.month", 6] }, then: "Jun" },
+                                { case: { $eq: ["$_id.month", 7] }, then: "Jul" },
+                                { case: { $eq: ["$_id.month", 8] }, then: "Aug" },
+                                { case: { $eq: ["$_id.month", 9] }, then: "Sep" },
+                                { case: { $eq: ["$_id.month", 10] }, then: "Oct" },
+                                { case: { $eq: ["$_id.month", 11] }, then: "Nov" },
+                                { case: { $eq: ["$_id.month", 12] }, then: "Dec" }
+                            ],
+                            default: "Unknown"
+                        }
+                    },
+                    " ",
+                    { $toString: "$_id.year" }
+                ]
+            };
+        } else { // weekly (default)
+            groupByExpression = {
+                year: { $year: "$createdAt" },
+                week: { $week: "$createdAt" }
+            };
+            sortExpression = { "_id.year": 1, "_id.week": 1 };
+            projectExpression = {
+                $concat: [
+                    "Week ",
+                    { $toString: "$_id.week" },
+                    " ",
+                    { $toString: "$_id.year" }
+                ]
+            };
+        }
+
+        const salesByPeriod = await Order.aggregate([
             {
                 $match: {
                     businessId: new mongoose.Types.ObjectId(businessId),
-                    createdAt: { $gte: sevenWeeksAgo },
+                    createdAt: { $gte: start, $lte: end },
                     status: { $ne: 'Cancelled' }
                 }
             },
             {
                 $group: {
-                    _id: {
-                        year: { $year: "$createdAt" },
-                        week: { $week: "$createdAt" }
-                    },
+                    _id: groupByExpression,
                     totalSales: { $sum: "$totalValue" },
                     orderCount: { $sum: 1 }
                 }
             },
             {
-                $sort: { "_id.year": 1, "_id.week": 1 }
+                $sort: sortExpression
             },
             {
                 $project: {
                     _id: 0,
-                    week: "$_id.week",
-                    year: "$_id.year",
-                    name: {
-                        $concat: [
-                            "Week ",
-                            { $toString: "$_id.week" }
-                        ]
-                    },
+                    name: projectExpression,
                     "Total Sales": "$totalSales",
                     "Number of Orders": "$orderCount"
                 }
             }
         ]);
 
-        // 3. Top Selling Products
+        // 3. Top Selling Products (filtered by date range)
         const topProducts = await Order.aggregate([
             {
                 $match: {
                     businessId: new mongoose.Types.ObjectId(businessId),
+                    createdAt: { $gte: start, $lte: end },
                     status: { $ne: 'Cancelled' }
                 }
             },
@@ -166,13 +238,14 @@ export const getBusinessAnalytics = async (req, res) => {
             { $sort: { totalRevenue: -1 } },
             { $limit: 10 }
         ]);
-
-        // 4. Orders by Status
+        // 4. Orders by Status (filtered by date range)
         const ordersByStatus = await Order.aggregate([
             {
                 $match: {
-                    businessId: new mongoose.Types.ObjectId(businessId)
+                    businessId: new mongoose.Types.ObjectId(businessId),
+                    createdAt: { $gte: start, $lte: end }
                 }
+            },  }
             },
             {
                 $group: {
@@ -181,23 +254,25 @@ export const getBusinessAnalytics = async (req, res) => {
                 }
             }
         ]);
-
-        // 5. Recent Orders (Last 10)
+        // 5. Recent Orders (filtered by date range, Last 10)
         const recentOrders = await Order.find({
-            businessId: businessId
+            businessId: businessId,
+            createdAt: { $gte: start, $lte: end }
         })
             .populate('userId', 'email')
             .sort({ createdAt: -1 })
             .limit(10)
             .lean();
 
-        // 6. Revenue by Day of Week
+        // 6. Revenue by Day of Week (within date range)
         const revenueByDayOfWeek = await Order.aggregate([
             {
                 $match: {
                     businessId: new mongoose.Types.ObjectId(businessId),
+                    createdAt: { $gte: start, $lte: end },
                     status: { $ne: 'Cancelled' }
                 }
+            },  }
             },
             {
                 $group: {
@@ -244,8 +319,6 @@ export const getBusinessAnalytics = async (req, res) => {
                     "Number of Orders": "$orderCount"
                 }
             }
-        ]);
-
         res.status(200).json({
             success: true,
             analytics: {
@@ -254,11 +327,15 @@ export const getBusinessAnalytics = async (req, res) => {
                     totalOrders: 0,
                     averageOrderValue: 0
                 },
-                salesByWeek: salesByWeek,
+                salesByWeek: salesByPeriod,
                 topProducts: topProducts,
                 ordersByStatus: ordersByStatus,
                 recentOrders: recentOrders,
-                revenueByDayOfWeek: revenueByDayOfWeek
+                revenueByDayOfWeek: revenueByDayOfWeek,
+                dateRange: { start, end },
+                granularity: granularity
+            }
+        });     revenueByDayOfWeek: revenueByDayOfWeek
             }
         });
 
