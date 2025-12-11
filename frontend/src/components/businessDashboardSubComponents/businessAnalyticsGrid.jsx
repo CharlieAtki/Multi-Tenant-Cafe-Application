@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import BusinessSalesLineChart from "./graphs/businessSalesLineChart";
 import BusinessAreaChart from "./graphs/businessAreaChart";
 import BusinessBarChart from "./graphs/businessBarChart";
+import AIInsightPanel from "./aiInsightPanel";
 import makeAuthenticatedRequest from "../../utils/api";
 import { useOutletContext } from 'react-router-dom';
 
@@ -127,6 +128,14 @@ const BusinessAnalyticsGrid = () => {
         </div>
       </div>
 
+      {/* AI Performance Insights Panel */}
+      <AIInsightPanel
+        type="performance"
+        businessId={businessId}
+        autoLoad={true}
+        prompt="Analyze my business performance with key trends and actionable recommendations"
+      />
+
       {/* Top large chart - Sales by Week */}
       <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-2xl transition-all duration-300 h-[500px] w-full">
         <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">
@@ -194,6 +203,18 @@ const BusinessAnalyticsGrid = () => {
           )}
         </div>
       </div>
+
+      {/* AI Product Recommendations Panel */}
+      <AIInsightPanel
+        type="recommendations"
+        businessId={businessId}
+        autoLoad={false}
+        quickPrompts={[
+          "What products should I add to my menu?",
+          "Show me trending products in my category",
+          "Analyze my product gaps"
+        ]}
+      />
 
       {/* Top Products */}
       <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-gray-700">
@@ -452,6 +473,13 @@ const BusinessAnalyticsGrid = () => {
           </div>
         </div>
       )}
+
+      {/* Floating AI Assistant */}
+      <AIInsightPanel
+        type="general"
+        businessId={businessId}
+        floating={true}
+      />
     </div>
   );
 };
