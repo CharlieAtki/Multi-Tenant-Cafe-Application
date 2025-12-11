@@ -245,8 +245,7 @@ export const getBusinessAnalytics = async (req, res) => {
                     businessId: new mongoose.Types.ObjectId(businessId),
                     createdAt: { $gte: start, $lte: end }
                 }
-            },  }
-            },
+            }, 
             {
                 $group: {
                     _id: "$status",
@@ -272,8 +271,7 @@ export const getBusinessAnalytics = async (req, res) => {
                     createdAt: { $gte: start, $lte: end },
                     status: { $ne: 'Cancelled' }
                 }
-            },  }
-            },
+            }, 
             {
                 $group: {
                     _id: { $dayOfWeek: "$createdAt" },
@@ -319,6 +317,7 @@ export const getBusinessAnalytics = async (req, res) => {
                     "Number of Orders": "$orderCount"
                 }
             }
+        ]);
         res.status(200).json({
             success: true,
             analytics: {
@@ -335,10 +334,8 @@ export const getBusinessAnalytics = async (req, res) => {
                 dateRange: { start, end },
                 granularity: granularity
             }
-        });     revenueByDayOfWeek: revenueByDayOfWeek
-            }
-        });
-
+        }); 
+            
     } catch (error) {
         console.error('Error fetching business analytics:', error);
         res.status(500).json({

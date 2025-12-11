@@ -164,6 +164,45 @@ const BusinessAreaChart = ({
                     }}
                 />
 
+                <Area
+                    type="monotone"
+                    dataKey={metricOne}
+                    stroke="#2563eb"
+                    fill="#3b82f6"
+                    fillOpacity={opacity[metricOne]}
+                    strokeWidth={2}
+                    stackId="1"
+                    animationDuration={enableAnimation ? 800 : 0}
+                    dot={{ r: 4, fill: "#2563eb" }}
+                    activeDot={{ r: 6, fill: "#1e40af" }}
+                />
+
+                <Area
+                    type="monotone"
+                    dataKey={metricTwo}
+                    stroke="#7c3aed"
+                    fill="#8b5cf6"
+                    fillOpacity={opacity[metricTwo]}
+                    strokeWidth={2}
+                    stackId="1"
+                    animationDuration={enableAnimation ? 800 : 0}
+                    dot={{ r: 4, fill: "#7c3aed" }}
+                    activeDot={{ r: 6, fill: "#5b21b6" }}
+                />
+                
+                {enableZoom && (
+                    <Brush 
+                        dataKey="name" 
+                        height={30} 
+                        stroke="#8884d8"
+                        fill="#f0f0f0"
+                    />
+                )}
+            </AreaChart>
+       </ResponsiveContainer>
+    )
+};
+
 // Enhanced Custom Tooltip with better formatting and styling
 const CustomTooltip = ({ active, payload, label, metricOne, metricTwo, metricOneUnit, metricTwoUnit }) => {
     if (active && payload && payload.length) {
@@ -197,46 +236,6 @@ const CustomTooltip = ({ active, payload, label, metricOne, metricTwo, metricOne
         );
     }
     return null;
-};                  fill="#8b5cf6"
-                    fillOpacity={opacity[metricTwo]}
-                    strokeWidth={2}
-                    stackId="1"
-                    animationDuration={enableAnimation ? 800 : 0}
-                    dot={{ r: 4, fill: "#7c3aed" }}
-                    activeDot={{ r: 6, fill: "#5b21b6" }}
-                />
-                
-                {enableZoom && (
-                    <Brush 
-                        dataKey="name" 
-                        height={30} 
-                        stroke="#8884d8"
-                        fill="#f0f0f0"
-                    />
-                )}
-            </AreaChart>
-       </ResponsiveContainer>
-    )
-};
-
-
-// Custom Tooltip - Changes the UI of the tooltip to make it more intuitive
-const CustomTooltip = ({ active, payload, label, metricOne, metricTwo, metricOneUnit, metricTwoUnit }) => {
-    if (active && payload && payload.length) {
-        return (
-             <div className="p-4 bg-slate-900 flex flex-col gap-4 rounded-md">
-                 <p className="text-medium text-lg text-white">{label}</p>
-                 <p className="text-sm text-blue-400">
-                     {metricOne}:
-                    <span className="ml-2">{`${payload[0].value} ${metricOneUnit || ''}`}</span>
-                 </p>
-                 <p className="text-sm text-indigo-400">
-                     {metricTwo}:
-                     <span className="ml-2">{`${payload[0].value} ${metricTwoUnit || ''}`}</span>
-                 </p>
-             </div>
-        );
-    }
 };
 
 // exporting the component.
