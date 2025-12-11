@@ -699,13 +699,40 @@ export const getCompetitorInsights = async (req, res) => {
         // Get all products
         const allProducts = await Product.find({}).lean();
 
+        console.log("=== DEBUG getCompetitorInsights ===");
+        console.log("businessId from req.body:", businessId);
+        console.log("businessId type:", typeof businessId);
+        console.log("Total products in DB:", allProducts.length);
+        
+        if (allProducts.length > 0) {
+            console.log("Sample product structure:", JSON.stringify(allProducts[0], null, 2));
+            console.log("Sample business.businessId:", allProducts[0].business?.businessId);
+            console.log("Sample business.businessId type:", typeof allProducts[0].business?.businessId);
+        }
+
         // Find this business's products to determine categories
         // Convert businessId to string for reliable comparison
         const businessIdStr = businessId.toString();
         
-        const businessProducts = allProducts.filter(
-            p => p.business?.businessId?.toString() === businessIdStr
-        );
+        console.log("businessIdStr:", businessIdStr);
+        
+        // Try multiple comparison strategies to debug
+        const businessProducts = allProducts.filter(p => {
+            if (!p.business?.businessId) return false;
+            
+            const prodBusinessId = p.business.businessId;
+            const prodBusinessIdStr = prodBusinessId.toString();
+            
+            console.log(`Comparing: "${prodBusinessIdStr}" === "${businessIdStr}"`, prodBusinessIdStr === businessIdStr);
+            
+            return prodBusinessIdStr === businessIdStr;
+        });
+
+        console.log("businessProducts found:", businessProducts.length);
+        if (businessProducts.length > 0) {
+            console.log("Sample business product:", businessProducts[0].productName);
+        }
+        console.log("=== END DEBUG ===");
 
         if (businessProducts.length === 0) {
             return res.status(200).json({
