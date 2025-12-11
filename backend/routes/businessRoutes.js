@@ -1,5 +1,5 @@
 import express from 'express';
-import { createBusiness, getBusinessAnalytics, getTimeRangeAnalytics, fetchCurrentBusinessInfo, joinBusiness, acceptOnboardingRequest, rejectOnboardingRequest, removeEmployeeFromBusiness } from '../controller/businessController.js';
+import { createBusiness, getBusinessAnalytics, getTimeRangeAnalytics, fetchCurrentBusinessInfo, joinBusiness, acceptOnboardingRequest, rejectOnboardingRequest, removeEmployeeFromBusiness, getBusinessProducts, getCompetitorInsights, getProductRecommendations, getPerformanceInsights } from '../controller/businessController.js';
 
 const router = express.Router();
 
@@ -8,6 +8,12 @@ router.post('/createBusiness', createBusiness);
 // New analytics routes
 router.post('/analytics', getBusinessAnalytics);
 router.post('/analytics/timerange', getTimeRangeAnalytics);
+
+// AI-powered business intelligence routes
+router.post('/products', getBusinessProducts);
+router.post('/competitor-insights', getCompetitorInsights);
+router.post('/product-recommendations', getProductRecommendations);
+router.post('/performance-insights', getPerformanceInsights);
 
 router.post('/fetchCurrentBusinessInfo', fetchCurrentBusinessInfo);
 

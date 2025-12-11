@@ -90,9 +90,26 @@ npm run preview  # Preview production build
 - `ai-mcp-service/src/main.py`: MCP tools wrap backend API calls
 
 **Triage routing logic:**
-- Detects `userData.business.businessId` → Routes to business_agent
+- Detects `userData.user.business.businessId` → Routes to business_agent
 - Keywords: "analytics", "performance", "sales" → business_agent
 - Keywords: "menu", "checkout", "order" → product_agent
+
+**CRITICAL: User Data Structure**
+The AI Agent receives `userData` with this structure:
+```javascript
+userData = {
+  user: {
+    _id: "user_mongodb_id",
+    email: "user@example.com",
+    business: {
+      businessId: "business_mongodb_id",  // <-- Required for business tools!
+      businessName: "Coffee Shop",
+      userRole: "owner" | "employee"
+    }
+  }
+}
+```
+**All business MCP tools require `business_id` parameter.** The agent must extract it from `userData.user.business.businessId` and pass it explicitly to each tool call.
 
 **Available MCP tools:**
 
@@ -154,8 +171,10 @@ npm run preview  # Preview production build
 5. **CORS origins:** Backend explicitly whitelists `localhost:5173` (dev), `localhost:4173` (prod), and Vercel production URL
 6. **AI agent caching:** Backend caches insights for 30 mins - conversational queries (with history) bypass cache
 7. **MCP tool privacy:** `get_competitor_insights` aggregates by category only - never exposes individual business names/data
+8. **BusinessId path in frontend:** Always use `userData?.user?.business?.businessId` (not `userData?.business?.businessId`)
+9. **BusinessId in AI agents:** Agent must extract from `userData['user']['business']['businessId']` and pass to all business tools
 
-## Key Integration Points
+## Common Gotchas
 
 **Cloudinary for images:** Frontend uploads product images directly to Cloudinary, stores URL in Product model. Configured via `VITE_CLOUDINARY_UPLOAD_URL`.
 
