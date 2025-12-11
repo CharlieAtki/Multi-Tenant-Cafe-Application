@@ -270,7 +270,7 @@ const BusinessProductCreation = () => {
             </div>
 
             {/* Main Form Card */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
+            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-8">
                 <h2 className="text-3xl font-bold mb-2 text-gray-800 dark:text-gray-200">Create New Product</h2>
                 <p className="text-gray-600 dark:text-gray-400 mb-6">Add a new product to your business catalog</p>
 
