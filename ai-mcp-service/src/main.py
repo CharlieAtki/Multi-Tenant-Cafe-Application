@@ -404,26 +404,40 @@ def get_business_analytics(business_id: str):
             data = response.json()
             analytics = data.get('analytics', {})
             
-            # Format for agent readability
+            # Format for agent readability - CONCISE KEY METRICS
             overview = analytics.get('overview', {})
             sales_by_week = analytics.get('salesByWeek', [])
             top_products = analytics.get('topProducts', [])
+            revenue_by_day = analytics.get('revenueByDayOfWeek', [])
             
-            summary = f"📊 Business Analytics Summary:\n\n"
-            summary += f"💰 Total Revenue: £{overview.get('totalRevenue', 0):.2f}\n"
-            summary += f"📦 Total Orders: {overview.get('totalOrders', 0)}\n"
-            summary += f"📈 Average Order Value: £{overview.get('averageOrderValue', 0):.2f}\n\n"
+            # Build concise, structured insights
+            metrics = []
             
-            if sales_by_week:
-                summary += f"📅 Recent Trends (Last 7 Weeks):\n"
-                for week in sales_by_week[-3:]:  # Last 3 weeks
-                    summary += f"  Week {week.get('week', 'N/A')}: £{week.get('totalSales', 0):.2f} ({week.get('orderCount', 0)} orders)\n"
-                summary += "\n"
+            # Core metrics
+            metrics.append(f"💰 Revenue: £{overview.get('totalRevenue', 0):.2f}")
+            metrics.append(f"📦 Orders: {overview.get('totalOrders', 0)}")
+            metrics.append(f"📊 Avg Order: £{overview.get('averageOrderValue', 0):.2f}")
             
+            # Weekly trend (if available)
+            if len(sales_by_week) >= 2:
+                last_week = sales_by_week[-1].get('totalSales', 0)
+                prev_week = sales_by_week[-2].get('totalSales', 0)
+                if prev_week > 0:
+                    change = ((last_week - prev_week) / prev_week) * 100
+                    emoji = "📈" if change > 0 else "📉"
+                    metrics.append(f"{emoji} Week Change: {change:+.1f}%")
+            
+            # Best day
+            if revenue_by_day:
+                best_day = max(revenue_by_day, key=lambda x: x.get('totalSales', 0))
+                metrics.append(f"⭐ Best Day: {best_day.get('_id', 'N/A')} (£{best_day.get('totalSales', 0):.2f})")
+            
+            # Top product
             if top_products:
-                summary += f"🏆 Top 5 Products:\n"
-                for idx, product in enumerate(top_products[:5], 1):
-                    summary += f"  {idx}. {product.get('productName', 'Unknown')}: {product.get('totalQuantity', 0)} sold (£{product.get('totalRevenue', 0):.2f})\n"
+                top = top_products[0]
+                metrics.append(f"🏆 Top Product: {top.get('productName', 'N/A')} ({top.get('totalQuantity', 0)} sold)")
+            
+            summary = "\n".join(metrics)
             
             return {
                 "success": True,
@@ -568,19 +582,17 @@ def get_competitor_insights(business_id: str):
                     "popular_products": [name for name, _ in top_products]
                 }
         
-        # Format insights
-        summary = f"🔍 Competitor Insights (Anonymized & Aggregated):\n\n"
+        # Format insights - CONCISE KEY METRICS
+        lines = ["🔍 Competitor Insights (Anonymized):"]
         
         for cat, stats in category_stats.items():
-            summary += f"📊 {cat.capitalize()} Category:\n"
-            summary += f"  • {stats['business_count']} businesses selling {cat} products\n"
-            summary += f"  • Average price: £{stats['avg_price']:.2f}\n"
-            summary += f"  • Popular products across platform:\n"
-            for prod in stats['popular_products']:
-                summary += f"    - {prod}\n"
-            summary += "\n"
+            cat_emoji = {"drink": "☕", "food": "🥐", "dessert": "🍰"}.get(cat, "📦")
+            lines.append(f"{cat_emoji} {cat.capitalize()}: {stats['business_count']} businesses, avg £{stats['avg_price']:.2f}")
+            # Top 3 popular products only
+            for prod in stats['popular_products'][:3]:
+                lines.append(f"  • {prod}")
         
-        summary += "💡 Note: All data is aggregated across multiple businesses for privacy compliance.\n"
+        summary = "\n".join(lines)
         
         return {
             "success": True,
@@ -644,20 +656,16 @@ def get_product_recommendations(business_id: str):
                 })
         
         if not recommendations:
-            return "✅ Your product catalog is comprehensive! You already offer the most popular items in your categories."
+            return "✅ Your catalog is comprehensive! You offer the most popular items in your categories."
         
-        # Format recommendations
-        summary = f"💡 Product Recommendations:\n\n"
-        summary += f"Based on analysis of {insights_result.get('categories_analyzed', [])} categories:\n\n"
-        
+        # Format as concise bullet points
+        lines = ["💡 Recommended Products:"]
         for rec in recommendations:
-            summary += f"📦 {rec['category'].capitalize()}:\n"
+            cat_emoji = {"drink": "☕", "food": "🥐", "dessert": "🍰"}.get(rec['category'], "📦")
             for product in rec['products']:
-                summary += f"  ✨ {product}\n"
-                summary += f"     Suggested price: £{rec['avg_price']:.2f} (category average)\n"
-            summary += "\n"
+                lines.append(f"{cat_emoji} {product} (~£{rec['avg_price']:.2f})")
         
-        summary += "💼 These products are popular across similar businesses and could increase your revenue.\n"
+        summary = "\n".join(lines)
         
         return {
             "success": True,
@@ -681,7 +689,7 @@ def get_performance_insights(business_id: str):
     - Top and underperforming products
     - Revenue patterns
     
-    Returns natural language insights with specific recommendations.
+    Returns concise key insights with specific recommendations.
     """
     try:
         # Get analytics data
@@ -699,72 +707,52 @@ def get_performance_insights(business_id: str):
         revenue_by_day = analytics.get('revenueByDayOfWeek', [])
         top_products = analytics.get('topProducts', [])
         
+        # Build concise key insights
         insights = []
         
-        # 1. Overall performance
         total_revenue = overview.get('totalRevenue', 0)
         total_orders = overview.get('totalOrders', 0)
         avg_order = overview.get('averageOrderValue', 0)
         
-        insights.append(f"📈 Overall Performance:")
-        insights.append(f"  • Total Revenue: £{total_revenue:.2f}")
-        insights.append(f"  • Total Orders: {total_orders}")
-        insights.append(f"  • Average Order Value: £{avg_order:.2f}")
-        
-        # 2. Week-over-week growth
+        # Week-over-week trend
         if len(sales_by_week) >= 2:
             last_week = sales_by_week[-1].get('totalSales', 0)
             prev_week = sales_by_week[-2].get('totalSales', 0)
             
             if prev_week > 0:
                 growth = ((last_week - prev_week) / prev_week) * 100
-                if growth > 0:
-                    insights.append(f"\n✅ Growth Trend:")
-                    insights.append(f"  • Revenue up {growth:.1f}% from previous week!")
-                    insights.append(f"  • £{last_week:.2f} vs £{prev_week:.2f}")
-                elif growth < 0:
-                    insights.append(f"\n⚠️ Growth Trend:")
-                    insights.append(f"  • Revenue down {abs(growth):.1f}% from previous week")
-                    insights.append(f"  • £{last_week:.2f} vs £{prev_week:.2f}")
-                    insights.append(f"  • Consider promotions or new product launches")
-                else:
-                    insights.append(f"\n📊 Stable performance week-over-week")
+                emoji = "📈" if growth > 0 else "📉"
+                insights.append(f"{emoji} Week-over-week: {growth:+.1f}%")
         
-        # 3. Best performing days
-        if revenue_by_day:
+        # Best/worst days
+        if revenue_by_day and len(revenue_by_day) > 1:
             sorted_days = sorted(revenue_by_day, key=lambda x: x.get('totalSales', 0), reverse=True)
             best_day = sorted_days[0]
             worst_day = sorted_days[-1]
-            
-            insights.append(f"\n📅 Day Performance:")
-            insights.append(f"  • Best day: {best_day.get('_id', 'Unknown')} (£{best_day.get('totalSales', 0):.2f})")
-            insights.append(f"  • Slowest day: {worst_day.get('_id', 'Unknown')} (£{worst_day.get('totalSales', 0):.2f})")
-            
-            if worst_day.get('totalSales', 0) < best_day.get('totalSales', 0) * 0.5:
-                insights.append(f"  💡 Tip: Consider special offers on {worst_day.get('_id', 'Unknown')} to boost sales")
+            insights.append(f"⭐ Best: {best_day.get('_id')} (£{best_day.get('totalSales', 0):.2f})")
+            insights.append(f"⚠️ Weakest: {worst_day.get('_id')} (£{worst_day.get('totalSales', 0):.2f})")
         
-        # 4. Product performance
+        # Top product
         if top_products:
-            insights.append(f"\n🏆 Top Performers:")
-            for idx, product in enumerate(top_products[:3], 1):
-                insights.append(f"  {idx}. {product.get('productName', 'Unknown')}: {product.get('totalQuantity', 0)} sold (£{product.get('totalRevenue', 0):.2f})")
-            
-            # Check if any products are underperforming
-            if len(top_products) > 3:
-                bottom_product = top_products[-1]
-                if bottom_product.get('totalQuantity', 0) < top_products[0].get('totalQuantity', 0) * 0.1:
-                    insights.append(f"\n⚠️ Underperforming:")
-                    insights.append(f"  • {bottom_product.get('productName', 'Unknown')}: Only {bottom_product.get('totalQuantity', 0)} sold")
-                    insights.append(f"  💡 Consider adjusting price or improving product description")
+            top = top_products[0]
+            insights.append(f"🏆 Top: {top.get('productName')} ({top.get('totalQuantity')} sold)")
         
-        # 5. Actionable recommendations
-        insights.append(f"\n💼 Recommendations:")
-        if avg_order < 10:
-            insights.append(f"  • Average order value is low. Consider bundling products or offering combos")
+        # Key recommendations (max 2)
+        recs = []
+        if avg_order < 10 and total_orders > 0:
+            recs.append("💡 Boost avg order: Bundle products or create combos")
         if total_orders > 0 and total_orders < 50:
-            insights.append(f"  • Focus on marketing to increase order volume")
+            recs.append("💡 Increase visibility: Focus on marketing campaigns")
         elif total_orders > 100:
-            insights.append(f"  • Strong order volume! Consider expanding product range")
+            recs.append("💡 Scale up: Consider expanding product range")
+        
+        if revenue_by_day and len(revenue_by_day) > 1:
+            sorted_days = sorted(revenue_by_day, key=lambda x: x.get('totalSales', 0), reverse=True)
+            worst = sorted_days[-1]
+            if worst.get('totalSales', 0) < sorted_days[0].get('totalSales', 0) * 0.5:
+                recs.append(f"💡 Run promotions on {worst.get('_id')} to boost slower days")
+        
+        insights.extend(recs[:2])  # Limit to 2 recommendations
         
         summary = "\n".join(insights)
         
