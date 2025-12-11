@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import Business from "../models/Business.js";
 import User from "../models/User.js";
 import Order from "../models/Order.js";
+import Product from "../models/Product.js";
 
 export const createBusiness = async (req, res) => {
     try {
@@ -694,8 +695,6 @@ export const getCompetitorInsights = async (req, res) => {
                 message: "Valid business ID required"
             });
         }
-
-        const Product = (await import('../models/Product.js')).default;
 
         // Get all products
         const allProducts = await Product.find({}).lean();
