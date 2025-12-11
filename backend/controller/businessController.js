@@ -699,40 +699,14 @@ export const getCompetitorInsights = async (req, res) => {
         // Get all products
         const allProducts = await Product.find({}).lean();
 
-        console.log("=== DEBUG getCompetitorInsights ===");
-        console.log("businessId from req.body:", businessId);
-        console.log("businessId type:", typeof businessId);
-        console.log("Total products in DB:", allProducts.length);
-        
-        if (allProducts.length > 0) {
-            console.log("Sample product structure:", JSON.stringify(allProducts[0], null, 2));
-            console.log("Sample business.businessId:", allProducts[0].business?.businessId);
-            console.log("Sample business.businessId type:", typeof allProducts[0].business?.businessId);
-        }
-
         // Find this business's products to determine categories
         // Convert businessId to string for reliable comparison
         const businessIdStr = businessId.toString();
         
-        console.log("businessIdStr:", businessIdStr);
-        
-        // Try multiple comparison strategies to debug
         const businessProducts = allProducts.filter(p => {
             if (!p.business?.businessId) return false;
-            
-            const prodBusinessId = p.business.businessId;
-            const prodBusinessIdStr = prodBusinessId.toString();
-            
-            console.log(`Comparing: "${prodBusinessIdStr}" === "${businessIdStr}"`, prodBusinessIdStr === businessIdStr);
-            
-            return prodBusinessIdStr === businessIdStr;
+            return p.business.businessId.toString() === businessIdStr;
         });
-
-        console.log("businessProducts found:", businessProducts.length);
-        if (businessProducts.length > 0) {
-            console.log("Sample business product:", businessProducts[0].productName);
-        }
-        console.log("=== END DEBUG ===");
 
         if (businessProducts.length === 0) {
             return res.status(200).json({
@@ -749,18 +723,11 @@ export const getCompetitorInsights = async (req, res) => {
             businessProducts.map(p => (p.category || '').toLowerCase()).filter(c => c)
         );
 
-        console.log("Business categories:", Array.from(businessCategories));
-
         // Find competitor products in same categories (exclude own business)
         const competitorProducts = allProducts.filter(
             p => businessCategories.has((p.category || '').toLowerCase()) &&
                  p.business?.businessId?.toString() !== businessIdStr
         );
-
-        console.log("Competitor products found:", competitorProducts.length);
-        if (competitorProducts.length > 0) {
-            console.log("Sample competitor product:", competitorProducts[0].productName, "Category:", competitorProducts[0].category);
-        }
 
         if (competitorProducts.length === 0) {
             return res.status(200).json({
@@ -846,44 +813,6 @@ export const getCompetitorInsights = async (req, res) => {
     }
 };
 
- === DEBUG getCompetitorInsights ===
-js-backend-1        | businessId from req.body: 693abc9fec1ec2aeb2df1e95
-js-backend-1        | businessId type: string
-js-backend-1        | Total products in DB: 10
-js-backend-1        | Sample product structure: {
-js-backend-1        |   "_id": "68e662c700e8b91f145726d4",
-js-backend-1        |   "business": {
-js-backend-1        |     "businessId": "68e52cdb9c31840087be1cf6"
-js-backend-1        |   },
-js-backend-1        |   "productName": "Latte",
-js-backend-1        |   "description": "Freshly brewed espresso with steamed milk.",
-js-backend-1        |   "price": 2.5,
-js-backend-1        |   "category": "Drink",
-js-backend-1        |   "imageUrl": "https://res.cloudinary.com/dvdpqtwxq/image/upload/v1759929026/zrw7mm4xvwq4iszeqxig.png",
-js-backend-1        |   "createdAt": "2025-10-08T13:10:31.840Z",
-js-backend-1        |   "updatedAt": "2025-10-08T13:10:31.840Z",
-js-backend-1        |   "__v": 0
-js-backend-1        | }
-js-backend-1        | Sample business.businessId: new ObjectId('68e52cdb9c31840087be1cf6')
-js-backend-1        | Sample business.businessId type: object
-js-backend-1        | businessIdStr: 693abc9fec1ec2aeb2df1e95
-js-backend-1        | Comparing: "68e52cdb9c31840087be1cf6" === "693abc9fec1ec2aeb2df1e95" false
-js-backend-1        | Comparing: "68e52cdb9c31840087be1cf6" === "693abc9fec1ec2aeb2df1e95" false
-js-backend-1        | Comparing: "68e52cdb9c31840087be1cf6" === "693abc9fec1ec2aeb2df1e95" false
-js-backend-1        | Comparing: "68e52cdb9c31840087be1cf6" === "693abc9fec1ec2aeb2df1e95" false
-js-backend-1        | Comparing: "68e52cdb9c31840087be1cf6" === "693abc9fec1ec2aeb2df1e95" false
-js-backend-1        | Comparing: "68e52cdb9c31840087be1cf6" === "693abc9fec1ec2aeb2df1e95" false
-js-backend-1        | Comparing: "68e52cdb9c31840087be1cf6" === "693abc9fec1ec2aeb2df1e95" false
-js-backend-1        | Comparing: "68e52cdb9c31840087be1cf6" === "693abc9fec1ec2aeb2df1e95" false
-js-backend-1        | Comparing: "68e52cdb9c31840087be1cf6" === "693abc9fec1ec2aeb2df1e95" false
-js-backend-1        | Comparing: "693abc9fec1ec2aeb2df1e95" === "693abc9fec1ec2aeb2df1e95" true
-js-backend-1        | businessProducts found: 1
-js-backend-1        | Sample business product: Churros
-js-backend-1        | === END DEBUG ===
-js-backend-1        | Business categories: [ 'dessert' ]
-js-backend-1        | Competitor products found: 0
-
-
 // Get product recommendations based on competitor analysis
 export const getProductRecommendations = async (req, res) => {
     try {
@@ -901,9 +830,12 @@ export const getProductRecommendations = async (req, res) => {
         // Get all products
         const allProducts = await Product.find({}).lean();
 
+        // Convert businessId to string for reliable comparison
+        const businessIdStr = businessId.toString();
+
         // Get business products
         const businessProducts = allProducts.filter(
-            p => p.business?.businessId === businessId
+            p => p.business?.businessId?.toString() === businessIdStr
         );
 
         if (businessProducts.length === 0) {
@@ -929,7 +861,7 @@ export const getProductRecommendations = async (req, res) => {
         // Find competitor products in same categories
         const competitorProducts = allProducts.filter(
             p => businessCategories.has((p.category || '').toLowerCase()) &&
-                 p.business?.businessId !== businessId
+                 p.business?.businessId?.toString() !== businessIdStr
         );
 
         if (competitorProducts.length === 0) {
