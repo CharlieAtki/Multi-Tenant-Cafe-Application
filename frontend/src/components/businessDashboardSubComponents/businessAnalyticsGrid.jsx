@@ -16,7 +16,7 @@ const BusinessAnalyticsGrid = () => {
   const [showOrderModal, setShowOrderModal] = useState(false);
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
-  const businessId = userData?.business?.businessId;
+  const businessId = userData?.user?.business?.businessId;
 
   useEffect(() => {
     const fetchAnalytics = async () => {
