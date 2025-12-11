@@ -39,7 +39,7 @@ export const generateTokens = (user) => {
     const payload = {
         id: user._id,
         email: user.email,
-        // Add other user data you want to include
+        business: user.business || null, // Include business data if present
     };
 
     const accessToken = jwt.sign(

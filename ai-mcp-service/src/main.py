@@ -372,6 +372,268 @@ def complete_user_order(user_email: str):
         return f"⚠️ Error completing order: {str(e)}"
 
 
+# ====================================================================
+# BUSINESS-FOCUSED TOOLS
+# ====================================================================
+
+@mcp.tool()
+def get_business_analytics(business_id: str):
+    """
+    Fetches comprehensive analytics data for a specific business.
+    
+    Args:
+        business_id: The MongoDB ObjectId of the business. Extract this from 
+                     userData.user.business.businessId in the agent context.
+    
+    Returns overview metrics (revenue, orders, average order value), 
+    sales trends over time, revenue by day of week, top products, 
+    order status distribution, and recent orders.
+    
+    Use this to provide business owners with performance insights.
+    Example: get_business_analytics(business_id=userData['user']['business']['businessId'])
+    """
+    try:
+        if not _token:
+            return "❌ Authentication token not available. Please ensure you're logged in."
+        
+        payload = {"businessId": business_id}
+        headers = {
+            "Authorization": f"Bearer {_token}",
+            "Content-Type": "application/json"
+        }
+        
+        endpoint = f"{EXPRESS_BASE_URL}/api/business-unAuth/analytics"
+        response = requests.post(endpoint, json=payload, headers=headers, timeout=10)
+        
+        if response.status_code == 200:
+            data = response.json()
+            analytics = data.get('analytics', {})
+            
+            # Format for agent readability - CONCISE KEY METRICS
+            overview = analytics.get('overview', {})
+            sales_by_week = analytics.get('salesByWeek', [])
+            top_products = analytics.get('topProducts', [])
+            revenue_by_day = analytics.get('revenueByDayOfWeek', [])
+            
+            # Build concise, structured insights
+            metrics = []
+            
+            # Core metrics
+            metrics.append(f"💰 Revenue: £{overview.get('totalRevenue', 0):.2f}")
+            metrics.append(f"📦 Orders: {overview.get('totalOrders', 0)}")
+            metrics.append(f"📊 Avg Order: £{overview.get('averageOrderValue', 0):.2f}")
+            
+            # Weekly trend (if available)
+            if len(sales_by_week) >= 2:
+                last_week = sales_by_week[-1].get('totalSales', 0)
+                prev_week = sales_by_week[-2].get('totalSales', 0)
+                if prev_week > 0:
+                    change = ((last_week - prev_week) / prev_week) * 100
+                    emoji = "📈" if change > 0 else "📉"
+                    metrics.append(f"{emoji} Week Change: {change:+.1f}%")
+            
+            # Best day
+            if revenue_by_day:
+                best_day = max(revenue_by_day, key=lambda x: x.get('totalSales', 0))
+                metrics.append(f"⭐ Best Day: {best_day.get('_id', 'N/A')} (£{best_day.get('totalSales', 0):.2f})")
+            
+            # Top product
+            if top_products:
+                top = top_products[0]
+                metrics.append(f"🏆 Top Product: {top.get('productName', 'N/A')} ({top.get('totalQuantity', 0)} sold)")
+            
+            summary = "\n".join(metrics)
+            
+            return {
+                "success": True,
+                "summary": summary,
+                "raw_data": analytics
+            }
+        else:
+            error_msg = response.text
+            try:
+                error_msg = response.json().get('message', error_msg)
+            except Exception:
+                pass
+            return f"❌ Failed to fetch analytics: {error_msg} (Status: {response.status_code})"
+            
+    except Exception as e:
+        return f"⚠️ Error fetching business analytics: {str(e)}"
+
+
+@mcp.tool()
+def get_business_products(business_id: str):
+    """
+    Lists all products belonging to a specific business with their details.
+    
+    Args:
+        business_id: The MongoDB ObjectId of the business. Extract from userData.user.business.businessId.
+    
+    Returns product names, descriptions, prices, categories, and image URLs.
+    Useful for understanding current product catalog and identifying gaps.
+    Example: get_business_products(business_id=userData['user']['business']['businessId'])
+    """
+    try:
+        if not _token:
+            return "❌ Authentication token not available. Please ensure you're logged in."
+        
+        payload = {"businessId": business_id}
+        headers = {
+            "Authorization": f"Bearer {_token}",
+            "Content-Type": "application/json"
+        }
+        
+        endpoint = f"{EXPRESS_BASE_URL}/api/business-unAuth/products"
+        response = requests.post(endpoint, json=payload, headers=headers, timeout=10)
+        
+        if response.status_code == 200:
+            data = response.json()
+            # Backend returns formatted data
+            return data.get('payload', data)
+        else:
+            error_msg = response.text
+            try:
+                error_msg = response.json().get('message', error_msg)
+            except Exception:
+                pass
+            return f"❌ Failed to fetch business products: {error_msg} (Status: {response.status_code})"
+            
+    except Exception as e:
+        return f"⚠️ Error fetching business products: {str(e)}"
+
+
+@mcp.tool()
+def get_competitor_insights(business_id: str):
+    """
+    Provides ANONYMIZED competitor insights based on aggregated category-level data.
+    
+    Args:
+        business_id: The MongoDB ObjectId of the business. Extract from userData.user.business.businessId.
+    
+    Analyzes businesses selling similar product categories to provide benchmarks:
+    - Average order values by category
+    - Popular products in the same category (platform-wide)
+    - Category growth trends
+    
+    PRIVACY: No individual business names or identifiable data is exposed.
+    All data is aggregated across multiple businesses for compliance.
+    """
+    try:
+        if not _token:
+            return "❌ Authentication token not available. Please ensure you're logged in."
+        
+        payload = {"businessId": business_id}
+        headers = {
+            "Authorization": f"Bearer {_token}",
+            "Content-Type": "application/json"
+        }
+        
+        endpoint = f"{EXPRESS_BASE_URL}/api/business-unAuth/competitor-insights"
+        response = requests.post(endpoint, json=payload, headers=headers, timeout=10)
+        
+        if response.status_code == 200:
+            data = response.json()
+            # Backend returns formatted data
+            return data.get('payload', data)
+        else:
+            error_msg = response.text
+            try:
+                error_msg = response.json().get('message', error_msg)
+            except Exception:
+                pass
+            return f"❌ Failed to fetch competitor insights: {error_msg} (Status: {response.status_code})"
+        
+    except Exception as e:
+        return f"⚠️ Error fetching competitor insights: {str(e)}"
+
+
+@mcp.tool()
+def get_product_recommendations(business_id: str):
+    """
+    Recommends products to add based on:
+    1. Popular products in competitor businesses (same category)
+    2. Platform-wide trending items
+    3. Gaps in current business product catalog
+    
+    Args:
+        business_id: The MongoDB ObjectId of the business. Extract from userData.user.business.businessId.
+    
+    Helps businesses expand their offerings strategically.
+    """
+    try:
+        if not _token:
+            return "❌ Authentication token not available. Please ensure you're logged in."
+        
+        payload = {"businessId": business_id}
+        headers = {
+            "Authorization": f"Bearer {_token}",
+            "Content-Type": "application/json"
+        }
+        
+        endpoint = f"{EXPRESS_BASE_URL}/api/business-unAuth/product-recommendations"
+        response = requests.post(endpoint, json=payload, headers=headers, timeout=10)
+        
+        if response.status_code == 200:
+            data = response.json()
+            # Backend returns formatted data
+            return data.get('payload', data)
+        else:
+            error_msg = response.text
+            try:
+                error_msg = response.json().get('message', error_msg)
+            except Exception:
+                pass
+            return f"❌ Failed to fetch product recommendations: {error_msg} (Status: {response.status_code})"
+        
+    except Exception as e:
+        return f"⚠️ Error generating product recommendations: {str(e)}"
+
+
+@mcp.tool()
+def get_performance_insights(business_id: str):
+    """
+    Analyzes business performance trends and provides actionable insights.
+    
+    Args:
+        business_id: The MongoDB ObjectId of the business. Extract from userData.user.business.businessId.
+    
+    Examines:
+    - Week-over-week growth trends
+    - Best performing days of the week
+    - Top and underperforming products
+    - Revenue patterns
+    
+    Returns concise key insights with specific recommendations.
+    """
+    try:
+        if not _token:
+            return "❌ Authentication token not available. Please ensure you're logged in."
+        
+        payload = {"businessId": business_id}
+        headers = {
+            "Authorization": f"Bearer {_token}",
+            "Content-Type": "application/json"
+        }
+        
+        endpoint = f"{EXPRESS_BASE_URL}/api/business-unAuth/performance-insights"
+        response = requests.post(endpoint, json=payload, headers=headers, timeout=10)
+        
+        if response.status_code == 200:
+            data = response.json()
+            # Backend returns formatted data
+            return data.get('payload', data)
+        else:
+            error_msg = response.text
+            try:
+                error_msg = response.json().get('message', error_msg)
+            except Exception:
+                pass
+            return f"❌ Failed to fetch performance insights: {error_msg} (Status: {response.status_code})"
+        
+    except Exception as e:
+        return f"⚠️ Error analyzing performance: {str(e)}"
+
+
 # Run the MCP server with HTTP transport
 if __name__ == "__main__":
     # The server will be available at http://localhost:8000/mcp by default for HTTP transport
