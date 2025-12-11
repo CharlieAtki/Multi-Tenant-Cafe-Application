@@ -846,6 +846,44 @@ export const getCompetitorInsights = async (req, res) => {
     }
 };
 
+ === DEBUG getCompetitorInsights ===
+js-backend-1        | businessId from req.body: 693abc9fec1ec2aeb2df1e95
+js-backend-1        | businessId type: string
+js-backend-1        | Total products in DB: 10
+js-backend-1        | Sample product structure: {
+js-backend-1        |   "_id": "68e662c700e8b91f145726d4",
+js-backend-1        |   "business": {
+js-backend-1        |     "businessId": "68e52cdb9c31840087be1cf6"
+js-backend-1        |   },
+js-backend-1        |   "productName": "Latte",
+js-backend-1        |   "description": "Freshly brewed espresso with steamed milk.",
+js-backend-1        |   "price": 2.5,
+js-backend-1        |   "category": "Drink",
+js-backend-1        |   "imageUrl": "https://res.cloudinary.com/dvdpqtwxq/image/upload/v1759929026/zrw7mm4xvwq4iszeqxig.png",
+js-backend-1        |   "createdAt": "2025-10-08T13:10:31.840Z",
+js-backend-1        |   "updatedAt": "2025-10-08T13:10:31.840Z",
+js-backend-1        |   "__v": 0
+js-backend-1        | }
+js-backend-1        | Sample business.businessId: new ObjectId('68e52cdb9c31840087be1cf6')
+js-backend-1        | Sample business.businessId type: object
+js-backend-1        | businessIdStr: 693abc9fec1ec2aeb2df1e95
+js-backend-1        | Comparing: "68e52cdb9c31840087be1cf6" === "693abc9fec1ec2aeb2df1e95" false
+js-backend-1        | Comparing: "68e52cdb9c31840087be1cf6" === "693abc9fec1ec2aeb2df1e95" false
+js-backend-1        | Comparing: "68e52cdb9c31840087be1cf6" === "693abc9fec1ec2aeb2df1e95" false
+js-backend-1        | Comparing: "68e52cdb9c31840087be1cf6" === "693abc9fec1ec2aeb2df1e95" false
+js-backend-1        | Comparing: "68e52cdb9c31840087be1cf6" === "693abc9fec1ec2aeb2df1e95" false
+js-backend-1        | Comparing: "68e52cdb9c31840087be1cf6" === "693abc9fec1ec2aeb2df1e95" false
+js-backend-1        | Comparing: "68e52cdb9c31840087be1cf6" === "693abc9fec1ec2aeb2df1e95" false
+js-backend-1        | Comparing: "68e52cdb9c31840087be1cf6" === "693abc9fec1ec2aeb2df1e95" false
+js-backend-1        | Comparing: "68e52cdb9c31840087be1cf6" === "693abc9fec1ec2aeb2df1e95" false
+js-backend-1        | Comparing: "693abc9fec1ec2aeb2df1e95" === "693abc9fec1ec2aeb2df1e95" true
+js-backend-1        | businessProducts found: 1
+js-backend-1        | Sample business product: Churros
+js-backend-1        | === END DEBUG ===
+js-backend-1        | Business categories: [ 'dessert' ]
+js-backend-1        | Competitor products found: 0
+
+
 // Get product recommendations based on competitor analysis
 export const getProductRecommendations = async (req, res) => {
     try {
