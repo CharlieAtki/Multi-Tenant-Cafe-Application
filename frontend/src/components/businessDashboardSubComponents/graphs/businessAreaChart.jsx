@@ -94,38 +94,44 @@ const BusinessAreaChart = ({
         <ResponsiveContainer width="100%" height="100%">
             <AreaChart 
                 data={graphData} 
-                margin={{ top: 20, right: 30, left: 20, bottom: enableZoom ? 40 : 20 }}
-                onMouseMove={(state) => {
-                    if (state.isTooltipActive) {
-                        // Could add additional interactions here
-                    }
+                margin={{ 
+                    top: 10, 
+                    right: 10, 
+                    left: 0, 
+                    bottom: enableZoom ? 50 : 10 
                 }}
             >
                 {/* Axes with labels */}
                     <XAxis
                         dataKey="name"
-                        label={{
-                            value: "Time Period", 
-                            position: "insideBottom",
-                            offset: -5,
-                            style: { fontSize: 14, fill: "#555" },
+                        tick={{ 
+                            fontSize: 11, 
+                            fill: "#6b7280",
+                            fontWeight: 500
                         }}
-                        tick={{ fontSize: 12, fill: "#666" }}
-                        angle={graphData?.length > 10 ? -45 : 0}
+                        tickLine={{ stroke: "#e5e7eb" }}
+                        axisLine={{ stroke: "#e5e7eb" }}
+                        angle={graphData?.length > 10 ? -35 : 0}
                         textAnchor={graphData?.length > 10 ? "end" : "middle"}
-                        height={graphData?.length > 10 ? 80 : 60}
+                        height={graphData?.length > 10 ? 70 : 50}
+                        dy={graphData?.length > 10 ? 5 : 0}
                     />
                     <YAxis
+                        tick={{ 
+                            fontSize: 11, 
+                            fill: "#6b7280",
+                            fontWeight: 500
+                        }}
+                        tickLine={{ stroke: "#e5e7eb" }}
+                        axisLine={{ stroke: "#e5e7eb" }}
                         label={{
                             value: "Value", 
                             angle: -90,
                             position: "insideLeft",
                             style: { textAnchor: "middle", fontSize: 14, fill: "#555" },
                         }}
-                        tick={{ fontSize: 12, fill: "#666" }}
-                        width={80}
                     />
-                {showGrid && <CartesianGrid strokeDasharray="5 5" stroke="#e5e7eb" />}
+                {showGrid && <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" opacity={0.7} />}
                 <Tooltip
                     content={
                         <CustomTooltip
@@ -138,9 +144,11 @@ const BusinessAreaChart = ({
                 />
                 <Legend
                     wrapperStyle={{
-                        paddingTop: "20px",
-                        textAlign: "center",
+                        paddingTop: "10px",
+                        fontSize: "12px",
                     }}
+                    iconType="circle"
+                    iconSize={8}
                     onClick={(e) => {
                         const dataKey = e.dataKey;
                         setOpacity((prev) => ({
@@ -193,9 +201,14 @@ const BusinessAreaChart = ({
                 {enableZoom && (
                     <Brush 
                         dataKey="name" 
-                        height={30} 
-                        stroke="#8884d8"
-                        fill="#f0f0f0"
+                        height={35}
+                        stroke="#3b82f6"
+                        fill="#eff6ff"
+                        travellerWidth={8}
+                        style={{
+                            fontSize: 10,
+                            fill: "#6b7280"
+                        }}
                     />
                 )}
             </AreaChart>

@@ -97,40 +97,49 @@ const BusinessBarChart = ({
         <ResponsiveContainer width="100%" height="100%">
             <BarChart 
                 data={graphData} 
-                margin={{ top: 20, right: 30, left: 20, bottom: enableZoom ? 40 : 20 }}
+                margin={{ 
+                    top: 10, 
+                    right: 10, 
+                    left: 0, 
+                    bottom: enableZoom ? 50 : 10 
+                }}
                 onMouseMove={(state) => {
                     if (state && state.activeTooltipIndex !== undefined) {
                         setHoveredBar(state.activeTooltipIndex);
                     }
                 }}
                 onMouseLeave={() => setHoveredBar(null)}
+                barGap={4}
+                barCategoryGap="20%"
+                barSize={40}
             >
 
                 {/* Axes with labels */}
                     <XAxis
                         dataKey="name"
-                        label={{
-                            value: "Time Period",
-                            position: "insideBottom",
-                            offset: -5,
-                            style: { fontSize: 14, fill: "#555" },
+                        tick={{ 
+                            fontSize: 11, 
+                            fill: "#6b7280",
+                            fontWeight: 500
                         }}
-                        tick={{ fontSize: 12, fill: "#666" }}
-                        angle={graphData?.length > 10 ? -45 : 0}
+                        tickLine={{ stroke: "#e5e7eb" }}
+                        axisLine={{ stroke: "#e5e7eb" }}
+                        angle={graphData?.length > 10 ? -35 : 0}
                         textAnchor={graphData?.length > 10 ? "end" : "middle"}
-                        height={graphData?.length > 10 ? 80 : 60}
+                        height={graphData?.length > 10 ? 70 : 50}
+                        dy={graphData?.length > 10 ? 5 : 0}
                     />
                     <YAxis
-                        label={{
-                            value: "Value",
-                            angle: -90,
-                            position: "insideLeft",
-                            style: { textAnchor: "middle", fontSize: 14, fill: "#555" },
+                        tick={{ 
+                            fontSize: 11, 
+                            fill: "#6b7280",
+                            fontWeight: 500
                         }}
-                        tick={{ fontSize: 12, fill: "#666" }}
-                        width={80}
+                        tickLine={{ stroke: "#e5e7eb" }}
+                        axisLine={{ stroke: "#e5e7eb" }}
+                        width={60}
                     />
-                {showGrid && <CartesianGrid strokeDasharray="5 5" stroke="#e5e7eb" />}
+                {showGrid && <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" opacity={0.7} vertical={false} />}
                         tick={{ fontSize: 12, fill: "#666" }}
                         width={80}
                     />
@@ -147,10 +156,12 @@ const BusinessBarChart = ({
                 />
                 <Legend
                     wrapperStyle={{
-                        paddingTop: "20px",
-                        textAlign: "center",
+                        paddingTop: "10px",
+                        fontSize: "12px",
                         cursor: "pointer",
                     }}
+                    iconType="rect"
+                    iconSize={12}
                     onClick={(e) => {
                         const dataKey = e.dataKey;
                         setOpacity((prev) => ({
@@ -181,6 +192,8 @@ const BusinessBarChart = ({
                     fillOpacity={opacity[metricOne]}
                     radius={[8, 8, 0, 0]}
                     animationDuration={enableAnimation ? 800 : 0}
+                    animationBegin={0}
+                    maxBarSize={35}
                     stackId={stackBars ? "stack" : undefined}
                 />
 
@@ -190,15 +203,22 @@ const BusinessBarChart = ({
                     fillOpacity={opacity[metricTwo]}
                     radius={[8, 8, 0, 0]}
                     animationDuration={enableAnimation ? 800 : 0}
+                    animationBegin={100}
+                    maxBarSize={35}
                     stackId={stackBars ? "stack" : undefined}
                 />
                 
                 {enableZoom && (
                     <Brush 
                         dataKey="name" 
-                        height={30} 
-                        stroke="#8884d8"
-                        fill="#f0f0f0"
+                        height={35}
+                        stroke="#3b82f6"
+                        fill="#eff6ff"
+                        travellerWidth={8}
+                        style={{
+                            fontSize: 10,
+                            fill: "#6b7280"
+                        }}
                     />
                 )}
             </BarChart>

@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import BusinessSalesLineChart from "./graphs/businessSalesLineChart";
 import BusinessAreaChart from "./graphs/businessAreaChart";
 import BusinessBarChart from "./graphs/businessBarChart";
+import BusinessPieChart from "./graphs/businessPieChart";
+import ChartTypeSwitcher from "./graphs/ChartTypeSwitcher";
+import GraphControls from "./graphs/GraphControls";
 import AIInsightPanel from "./aiInsightPanel";
 import makeAuthenticatedRequest from "../../utils/api";
 import { useOutletContext } from 'react-router-dom';
@@ -10,10 +13,31 @@ const BusinessAnalyticsGrid = () => {
   const { userData } = useOutletContext();
 
   const [analyticsData, setAnalyticsData] = useState(null);
+  const [previousAnalyticsData, setPreviousAnalyticsData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showOrderModal, setShowOrderModal] = useState(false);
+  
+  // Enhanced features state
+  const [chartType, setChartType] = useState(() => 
+    localStorage.getItem('analytics_chartType') || 'line'
+  );
+  const [comparisonMode, setComparisonMode] = useState(false);
+  const [dateRange, setDateRange] = useState(() => {
+    const saved = localStorage.getItem('analytics_dateRange');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      return { start: new Date(parsed.start), end: new Date(parsed.end) };
+    }
+    return { 
+      start: new Date(Date.now() - 49 * 24 * 60 * 60 * 1000),
+      end: new Date()
+    };
+  });
+  const [granularity, setGranularity] = useState(() => 
+    localStorage.getItem('analytics_granularity') || 'weekly'
+  );
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const businessId = userData?.user?.business?.businessId;
@@ -28,11 +52,18 @@ const BusinessAnalyticsGrid = () => {
 
       try {
         setLoading(true);
+        
+        // Fetch current period
         const response = await makeAuthenticatedRequest(
           `${backendUrl}/api/business-unAuth/analytics`,
           {
             method: "POST",
-            body: JSON.stringify({ businessId })
+            body: JSON.stringify({ 
+              businessId,
+              startDate: dateRange.start.toISOString(),
+              endDate: dateRange.end.toISOString(),
+              granularity: granularity
+            })
           }
         );
 
@@ -40,6 +71,33 @@ const BusinessAnalyticsGrid = () => {
           const data = await response.json();
           setAnalyticsData(data.analytics);
           setError(null);
+          
+          // Fetch previous period for comparison
+          if (comparisonMode) {
+            const periodLength = dateRange.end - dateRange.start;
+            const prevStart = new Date(dateRange.start.getTime() - periodLength);
+            const prevEnd = new Date(dateRange.start.getTime());
+            
+            const prevResponse = await makeAuthenticatedRequest(
+              `${backendUrl}/api/business-unAuth/analytics`,
+              {
+                method: "POST",
+                body: JSON.stringify({ 
+                  businessId,
+                  startDate: prevStart.toISOString(),
+                  endDate: prevEnd.toISOString(),
+                  granularity: granularity
+                })
+              }
+            );
+            
+            if (prevResponse.ok) {
+              const prevData = await prevResponse.json();
+              setPreviousAnalyticsData(prevData.analytics);
+            }
+          } else {
+            setPreviousAnalyticsData(null);
+          }
         } else {
           setError("Failed to fetch analytics data");
         }
@@ -52,7 +110,7 @@ const BusinessAnalyticsGrid = () => {
     };
 
     fetchAnalytics();
-  }, [businessId, backendUrl]);
+  }, [businessId, backendUrl, dateRange, granularity, comparisonMode]);
 
   const handleViewOrder = (order) => {
     setSelectedOrder(order);
@@ -62,6 +120,55 @@ const BusinessAnalyticsGrid = () => {
   const closeModal = () => {
     setShowOrderModal(false);
     setSelectedOrder(null);
+  };
+  
+  const handleDateRangeChange = (newRange) => {
+    setDateRange(newRange);
+    localStorage.setItem('analytics_dateRange', JSON.stringify({
+      start: newRange.start.toISOString(),
+      end: newRange.end.toISOString()
+    }));
+  };
+  
+  const handleGranularityChange = (newGranularity) => {
+    setGranularity(newGranularity);
+    localStorage.setItem('analytics_granularity', newGranularity);
+  };
+  
+  const handleChartTypeChange = (newType) => {
+    setChartType(newType);
+    localStorage.setItem('analytics_chartType', newType);
+  };
+  
+  const calculateTrend = (current, previous) => {
+    if (!previous || previous === 0) return null;
+    const change = ((current - previous) / previous) * 100;
+    return {
+      percentage: Math.abs(change).toFixed(1),
+      isPositive: change > 0,
+      isNeutral: Math.abs(change) < 0.1
+    };
+  };
+  
+  const renderChart = (data, metricOne, metricTwo) => {
+    const props = {
+      graphData: data,
+      metricOne,
+      metricTwo,
+      metricOneUnit: "GBP",
+      metricTwoUnit: "Orders",
+      enableAnimation: true
+    };
+    
+    switch(chartType) {
+      case 'bar':
+        return <BusinessBarChart {...props} enableZoom={false} />;
+      case 'area':
+        return <BusinessAreaChart {...props} enableZoom={true} />;
+      case 'line':
+      default:
+        return <BusinessSalesLineChart {...props} enableZoom={true} />;
+    }
   };
 
   if (loading) {
@@ -95,36 +202,119 @@ const BusinessAnalyticsGrid = () => {
   }
 
   const { overview, salesByWeek, revenueByDayOfWeek, topProducts, ordersByStatus, recentOrders } = analyticsData;
+  
+  const revenueTrend = previousAnalyticsData ? 
+    calculateTrend(overview.totalRevenue, previousAnalyticsData.overview.totalRevenue) : null;
+  const ordersTrend = previousAnalyticsData ? 
+    calculateTrend(overview.totalOrders, previousAnalyticsData.overview.totalOrders) : null;
+  const avgOrderTrend = previousAnalyticsData ? 
+    calculateTrend(overview.averageOrderValue, previousAnalyticsData.overview.averageOrderValue) : null;
 
   return (
     <div className="flex flex-col gap-6 p-6 bg-gray-100 dark:bg-gray-900 rounded-2xl">
-      {/* Overview Stats */}
+      
+      {/* Controls Bar */}
+      <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+        <GraphControls
+          onDateRangeChange={handleDateRangeChange}
+          onGranularityChange={handleGranularityChange}
+          currentGranularity={granularity}
+          showExport={false}
+        />
+        
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setComparisonMode(!comparisonMode)}
+            className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 text-sm ${
+              comparisonMode
+                ? 'bg-blue-600 text-white shadow-md'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+            }`}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            {comparisonMode ? 'Comparing' : 'Compare'}
+          </button>
+        </div>
+      </div>
+      
+      {/* Overview Stats with Trends */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-gray-700">
-          <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
-            Total Revenue
-          </h3>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">
+              Total Revenue
+            </h3>
+            {revenueTrend && !revenueTrend.isNeutral && (
+              <span className={`flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full ${
+                revenueTrend.isPositive 
+                  ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300' 
+                  : 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300'
+              }`}>
+                {revenueTrend.isPositive ? '↑' : '↓'} {revenueTrend.percentage}%
+              </span>
+            )}
+          </div>
           <p className="text-3xl font-bold text-green-600 dark:text-green-400">
             £{overview.totalRevenue?.toFixed(2) || "0.00"}
           </p>
+          {comparisonMode && previousAnalyticsData && (
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+              vs £{previousAnalyticsData.overview.totalRevenue?.toFixed(2) || "0.00"}
+            </p>
+          )}
         </div>
 
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-gray-700">
-          <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
-            Total Orders
-          </h3>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">
+              Total Orders
+            </h3>
+            {ordersTrend && !ordersTrend.isNeutral && (
+              <span className={`flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full ${
+                ordersTrend.isPositive 
+                  ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300' 
+                  : 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300'
+              }`}>
+                {ordersTrend.isPositive ? '↑' : '↓'} {ordersTrend.percentage}%
+              </span>
+            )}
+          </div>
           <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
             {overview.totalOrders || 0}
           </p>
+          {comparisonMode && previousAnalyticsData && (
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+              vs {previousAnalyticsData.overview.totalOrders || 0}
+            </p>
+          )}
         </div>
 
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-gray-700">
-          <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
-            Average Order Value
-          </h3>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">
+              Average Order Value
+            </h3>
+            {avgOrderTrend && !avgOrderTrend.isNeutral && (
+              <span className={`flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full ${
+                avgOrderTrend.isPositive 
+                  ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300' 
+                  : 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300'
+              }`}>
+                {avgOrderTrend.isPositive ? '↑' : '↓'} {avgOrderTrend.percentage}%
+              </span>
+            )}
+          </div>
           <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">
             £{overview.averageOrderValue?.toFixed(2) || "0.00"}
           </p>
+          {comparisonMode && previousAnalyticsData && (
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+              vs £{previousAnalyticsData.overview.averageOrderValue?.toFixed(2) || "0.00"}
+            </p>
+          )}
         </div>
       </div>
 
@@ -136,22 +326,23 @@ const BusinessAnalyticsGrid = () => {
         prompt="Analyze my business performance with key trends and actionable recommendations"
       />
 
-      {/* Top large chart - Sales by Week */}
+      {/* Top large chart - Sales with Chart Type Switcher */}
       <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-2xl transition-all duration-300 h-[500px] w-full">
-        <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">
-          Sales Over Time (Last 7 Weeks)
-        </h2>
-        {salesByWeek && salesByWeek.length > 0 ? (
-          <BusinessSalesLineChart
-            graphData={salesByWeek}
-            metricOne="Total Sales"
-            metricTwo="Number of Orders"
-            metricOneUnit="GBP"
-            metricTwoUnit="Orders"
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
+            Sales Trends {granularity === 'daily' ? '(Daily)' : granularity === 'weekly' ? '(Weekly)' : '(Monthly)'}
+          </h2>
+          <ChartTypeSwitcher 
+            currentType={chartType}
+            onTypeChange={handleChartTypeChange}
+            availableTypes={['line', 'bar', 'area']}
           />
+        </div>
+        {salesByWeek && salesByWeek.length > 0 ? (
+          renderChart(salesByWeek, "Total Sales", "Number of Orders")
         ) : (
           <div className="flex items-center justify-center h-full">
-            <p className="text-gray-500">No sales data available for the past 7 weeks</p>
+            <p className="text-gray-500">No sales data available for the selected period</p>
           </div>
         )}
       </div>
